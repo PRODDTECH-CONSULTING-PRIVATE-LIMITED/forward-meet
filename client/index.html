@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Midway Place Finder</title>
+
+    <!-- This <script> will be replaced by Vite -->
+    <script type="module">
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+      // Load Google Maps JavaScript API
+      const mapsParams = new URLSearchParams({
+        key: apiKey,
+        v: "beta",
+        libraries: "places"
+      });
+
+      const mapsScript = document.createElement("script");
+      mapsScript.src = `https://maps.googleapis.com/maps/api/js?${mapsParams.toString()}`;
+      mapsScript.async = true;
+      mapsScript.defer = true;
+      document.head.appendChild(mapsScript);
+
+      // Load Places Web Component
+      const placesScript = document.createElement("script");
+      placesScript.src = `https://www.gstatic.com/maps-platform/places-web-component/loader.js?apiKey=${apiKey}`;
+      placesScript.defer = true;
+      document.head.appendChild(placesScript);
+    </script>
+
+    <!-- Optional: Hide 'Open in Maps' button -->
+    <style>
+      gmpx-button[aria-label="Open in Maps"],
+      gmpx-button[aria-label="View on Google Maps"],
+      .gmpx-open-in-maps-button {
+        display: none !important;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f9fafb;
+      }
+
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
