@@ -202,6 +202,7 @@ const App = () => {
 
   // Helper function to show all markers and routes
   const showMarkersForAllPlaces = () => {
+    
     if (!map || !directionsService || !directionsRenderer || midwayRestaurants.length === 0) return;
 
     // Clear old markers and routes
@@ -250,6 +251,15 @@ const App = () => {
         label: String.fromCharCode(65 + index),
         icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
       });
+
+      console.log("Restaurant Data:", restaurant);
+
+      marker.addListener("click", () => {
+        // console.log("Restaurant Data:", restaurant);
+        setDetailedPlaceId(restaurant.place_id); 
+        setIsDetailedView(true);
+      });
+
       newMarkers.push(marker);
       bounds.extend(coords);
     });
