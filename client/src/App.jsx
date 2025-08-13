@@ -5,6 +5,8 @@ import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
 import MapComponent from "./components/MapComponent";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import { DatePicker, Button } from "antd";
+import dayjs from "dayjs";
 
 // Main App component
 const App = () => {
@@ -62,6 +64,8 @@ const App = () => {
   //Side Panel Toggle
   const [showSidebar, setShowSidebar] = useState(true);
 
+  //AntD Integeration
+  const [selectedDateTime, setSelectedDateTime] = useState(null);
 
   // Check for library loading
   useEffect(() => {
@@ -353,7 +357,8 @@ const App = () => {
                       height: 0;
                       border-left: 8px solid transparent;
                       border-right: 8px solid transparent;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    </div>
                   </div>
                   
                 `;
@@ -647,7 +652,7 @@ const App = () => {
       </div>
     );
   }
-
+  
   return (
     <div
       className="grid h-screen bg-gray-100"
@@ -846,6 +851,29 @@ const App = () => {
                     </label>
                   </div>
                 </div>
+
+                {/* Traffic Prediction */}
+                {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  <p className="text-gray-700 font-semibold mb-3 text-sm">
+                    ⏰ Traffic Prediction (Driving Only)
+                  </p>
+                  <div>
+                    <label
+                      htmlFor="trafficDateTime"
+                      className="block text-gray-600 text-xs font-semibold mb-1"
+                    >
+                      Date & Time:
+                    </label>
+                    <DatePicker
+                      id="trafficDateTime"
+                      showTime={{ format: "HH:mm" }}
+                      format="YYYY-MM-DD HH:mm"
+                      value={selectedDateTime ? dayjs(selectedDateTime) : null}
+                      onChange={(date, dateString) => setSelectedDateTime(dateString)}
+                      className="w-full"
+                    />
+                  </div>
+                </div> */}
 
                 {/* Traffic Prediction */}
                 <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
@@ -1093,7 +1121,6 @@ const App = () => {
     />
   </div>
 ))}
-
 
               {/* Pagination Controls */}
               {totalPages > 1 && !isDetailedView && (
