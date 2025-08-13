@@ -97,6 +97,15 @@ const GooglePlaceCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =>
 
     {/* Custom Travel Info Panel */}
     {locationInfo && (
+    <>
+      {/* Mini Map Preview */}
+      {/* <img
+        src={`https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lon}&zoom=15&size=300x150&markers=color:red%7C${location.lat},${location.lon}&key=AIzaSyBxoloHK5ebXEH9fqeJa6f4NUlD8Rgy_QA`}
+        alt="Mini Map"
+        className="rounded-md mt-3 ml-4 mr-4 shadow border"
+      /> */}
+
+      {/* Custom Travel Info Panel */}
       <div
         style={{
           display: "flex",
@@ -105,10 +114,9 @@ const GooglePlaceCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =>
           padding: "12px 16px",
           gap: "12px",
           borderTop: "1px solid #e0e0e0",
-          overflowX: "auto",         // Enable horizontal scrolling
-          whiteSpace: "nowrap",      // Prevent wrapping to next line
-          // Remove flexWrap; it's not needed anymore
-          scrollbarWidth: "thin",    // (optional) thinner scrollbar for Firefox
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+          scrollbarWidth: "thin",
           cursor: "pointer"
         }}
       >
@@ -122,9 +130,10 @@ const GooglePlaceCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =>
           time={travel_time_from_loc2_min}
           distance={travel_distance_from_loc2_km}
         />
-        {/* Additional InfoBoxes can be added here if needed */}
       </div>
-    )}
+    </>
+  )}
+
   </div>
 );
 };

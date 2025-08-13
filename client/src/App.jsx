@@ -3,6 +3,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
+import MapComponent from "./components/MapComponent";
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 // Main App component
 const App = () => {
@@ -56,6 +58,10 @@ const App = () => {
   const [mapsLoaded, setMapsLoaded] = useState(false);
   const [isDetailedView, setIsDetailedView] = useState(false);
   const [detailedPlaceId, setDetailedPlaceId] = useState(null);
+
+  //Side Panel Toggle
+  const [showSidebar, setShowSidebar] = useState(true);
+
 
   // Check for library loading
   useEffect(() => {
@@ -111,6 +117,22 @@ const App = () => {
     };
   }, [mapsLoaded]);
 
+     // Keep Google Map resized when window or panel changes
+    useEffect(() => {
+      const handleResize = () => {
+        if (map) {
+          window.google.maps.event.trigger(map, "resize");
+          // Optional: keep the map centered after resize
+          const currentCenter = map.getCenter();
+          map.setCenter(currentCenter);
+        }
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, [map]);
+ 
+
   // Initialize autocomplete
   useEffect(() => {
     if (mapsLoaded && window.google?.maps?.places) {
@@ -127,7 +149,7 @@ const App = () => {
 
   // Function to initialize the Google Map
   const initMap = () => {
-    if (mapRef.current && window.google?.maps?.Map) {
+    if (mapRef.current && window.google?.maps?.Map && !map) {
       const googleMap = new window.google.maps.Map(mapRef.current, {
         center: { lat: 20.5937, lng: 78.9629 },
         zoom: 5,
@@ -242,15 +264,128 @@ const App = () => {
     bounds.extend(loc1Coords);
     bounds.extend(loc2Coords);
 
+    const infoWindow = new window.google.maps.InfoWindow();
+
     midwayRestaurants.forEach((restaurant, index) => {
+
       const coords = { lat: restaurant.lat, lng: restaurant.lon };
+      // const marker = new window.google.maps.Marker({
+      //   position: coords,
+      //   map,
+      //   title: restaurant.name,
+      //   label: String.fromCharCode(65 + index),
+      //   icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      // });
+
+      //new marker
       const marker = new window.google.maps.Marker({
         position: coords,
         map,
         title: restaurant.name,
         label: String.fromCharCode(65 + index),
-        icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+        icon: { 
+          url: "/placeholder.png" ,
+          scaledSize: new window.google.maps.Size(40, 40),
+          anchor: new window.google.maps.Point(20, 40)
+        }
       });
+
+      ////   place preview on hover  ////
+      const service = new window.google.maps.places.PlacesService(map);
+      
+      //// on hover detail with card ////
+      marker.addListener("mouseover", () => {
+          service.getDetails(
+            {
+              placeId: restaurant.place_id,
+              fields: ["name", "formatted_address", "rating", "user_ratings_total", "photos", "types"]
+
+            },
+            (place, status) => {
+              if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+
+                //Display name
+                const name =
+                    place?.name ||
+                    restaurant?.name ||
+                    place?.formatted_address ||
+                    "Unknown Place";
+                
+                // Displays photo if available
+                const photoUrl =
+                  place.photos && place.photos.length > 0
+                    ? place.photos[0].getUrl({ maxWidth: 300, maxHeight: 180 })
+                    : "";
+
+                // Rating display
+                const stars = place.rating
+                ? `${'★'.repeat(Math.floor(place.rating))}${place.rating % 1 ? '½' : ''}`
+                    .padEnd(5, '☆') // fill remaining stars
+                    .replace(/★/g, '<span style="color:#fbbc04;">★</span>')
+                    .replace(/½/g, '<span style="color:#fbbc04;">★</span><span style="color:#fbbc04; opacity:0.5;">★</span>') +
+                  ` <span style="color:#555;">(${place.user_ratings_total})</span>`
+                : "";
+                // HTML for the card
+                const content = `
+                  <div style="
+                    width: 260px;
+                    font-family: Roboto, Arial, sans-serif;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                    overflow: hidden;
+                    animation: fadeIn 0.2s ease-out;
+                    position: relative;
+                  ">
+                    ${photoUrl ? `<img src="${photoUrl}" style="width:100%; height:150px; object-fit:cover;"/>` : ""}
+                    <div style="padding: 8px;">
+                      <div style="font-size:20px; font-weight:bold; margin-bottom:4px; color:black;">
+                          ${name}
+                      </div>
+                      <div style="font-size:15px; color:#555; margin-bottom:6px;">${place.formatted_address || ""}</div>
+                      <div style="font-size:13px;">${stars}</div>
+                    </div>
+                    <div style="
+                      position: absolute;
+                      bottom: -8px;
+                      left: 20px;
+                      width: 0;
+                      height: 0;
+                      border-left: 8px solid transparent;
+                      border-right: 8px solid transparent;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  </div>
+                  
+                `;
+
+                // Show info window
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+              }
+            }
+          );
+        });
+
+      // Close card on mouseout
+          marker.addListener("mouseout", () => {
+            infoWindow.close();
+          });    
+
+      // marker.addListener("mouseover", () => {
+      //   const content = `
+      //     <div style="max-width:220px">
+      //       <strong>${restaurant.name}</strong><br/>
+      //       ${restaurant.address || ""}<br/>
+      //       ${restaurant.rating ? `⭐ ${restaurant.rating}` : ""}
+      //     </div>
+      //   `;
+      //   infoWindow.setContent(content);
+      //   infoWindow.open(map, marker);
+      // });
+
+      // marker.addListener("mouseout", () => {
+      //   infoWindow.close();
+      // });
 
       console.log("Restaurant Data:", restaurant);
 
@@ -266,6 +401,14 @@ const App = () => {
 
     setMarkers(newMarkers);
     map.fitBounds(bounds);
+
+    //clustering///////
+    // new MarkerClusterer({ 
+    //   map,
+    //   markers: newMarkers
+    // }); 
+
+    window.google.maps.event.trigger(map, "resize");
 
     // Display route
     directionsService.route({
@@ -299,7 +442,7 @@ const App = () => {
       position: { lat: selected.lat, lng: selected.lon },
       map,
       title: selected.name,
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      icon: { url: "/public/placeholder.png" }
     });
 
     setMarkers([marker]);
@@ -919,23 +1062,38 @@ const App = () => {
                   setIsDetailedView={setIsDetailedView}
                 />
               )}
+  {/* Restaurant Cards */}
+  {!isDetailedView && currentItems.map((location, index) => (
+  <div
+    id={`place-${location.place_id}`} // for scrolling from marker
+    key={location.place_id}
+    className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+    onMouseEnter={() => {
+      markers.forEach((marker) => {
+        marker.setIcon(
+          marker.place_id === location.place_id
+            ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        );
+      });
+    }}
+    onMouseLeave={() => {
+      markers.forEach((marker) => {
+        marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+      });
+    }}
+    onClick={() => {
+      setIsDetailedView(true);
+      setDetailedPlaceId(location.place_id);
+    }}
+  >
+    <GooglePlaceCardCompact
+      placeId={location.place_id}
+      locationInfo={location}
+    />
+  </div>
+))}
 
-              {/* Restaurant Cards */}
-              {!isDetailedView && currentItems.map((location, index) => (
-                <div
-                  key={location.place_id}
-                  className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                  onClick={() => {
-                    setIsDetailedView(true);
-                    setDetailedPlaceId(location.place_id);
-                  }}
-                >
-                  <GooglePlaceCardCompact
-                    placeId={location.place_id}
-                    locationInfo={location}
-                  />
-                </div>
-              ))}
 
               {/* Pagination Controls */}
               {totalPages > 1 && !isDetailedView && (
@@ -1027,9 +1185,7 @@ const App = () => {
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200 z-10">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-gray-700">
-              Map Active
-            </span>
+            <span className="text-sm font-medium text-gray-700">Map Active</span>
           </div>
         </div>
       </div>
