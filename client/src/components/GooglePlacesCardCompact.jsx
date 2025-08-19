@@ -98,13 +98,6 @@ const GooglePlaceCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =>
     {/* Custom Travel Info Panel */}
     {locationInfo && (
     <>
-      {/* Mini Map Preview */}
-      {/* <img
-        src={`https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lon}&zoom=15&size=300x150&markers=color:red%7C${location.lat},${location.lon}&key=AIzaSyBxoloHK5ebXEH9fqeJa6f4NUlD8Rgy_QA`}
-        alt="Mini Map"
-        className="rounded-md mt-3 ml-4 mr-4 shadow border"
-      /> */}
-
       {/* Custom Travel Info Panel */}
       <div
         style={{

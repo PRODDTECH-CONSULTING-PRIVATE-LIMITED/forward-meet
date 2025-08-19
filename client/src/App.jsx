@@ -5,8 +5,7 @@ import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
 import MapComponent from "./components/MapComponent";
 import { MarkerClusterer } from "@googlemaps/markerclusterer";
-import { DatePicker, Button } from "antd";
-import dayjs from "dayjs";
+import TrafficPrediction from "./components/TrafficPrediction";
 
 // Main App component
 const App = () => {
@@ -251,15 +250,23 @@ const App = () => {
       position: loc1Coords,
       map,
       title: "Location 1",
-      label: "1",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // label: "1",
+      icon: {
+        url: "/bluePin.png", 
+        scaledSize: new window.google.maps.Size(40, 40),
+        anchor: new window.google.maps.Point(20, 40)
+      }
     });
     const loc2Marker = new window.google.maps.Marker({
       position: loc2Coords,
       map,
       title: "Location 2",
-      label: "2",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // label: "2",
+      icon: {
+        url: "/bluePin.png", 
+        scaledSize: new window.google.maps.Size(40, 40),
+        anchor: new window.google.maps.Point(20, 40)
+      }
     });
 
     newMarkers.push(loc1Marker, loc2Marker);
@@ -273,20 +280,13 @@ const App = () => {
     midwayRestaurants.forEach((restaurant, index) => {
 
       const coords = { lat: restaurant.lat, lng: restaurant.lon };
-      // const marker = new window.google.maps.Marker({
-      //   position: coords,
-      //   map,
-      //   title: restaurant.name,
-      //   label: String.fromCharCode(65 + index),
-      //   icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
-      // });
-
+      
       //new marker
       const marker = new window.google.maps.Marker({
         position: coords,
         map,
         title: restaurant.name,
-        label: String.fromCharCode(65 + index),
+        // label: String.fromCharCode(65 + index),
         icon: { 
           url: "/placeholder.png" ,
           scaledSize: new window.google.maps.Size(40, 40),
@@ -297,6 +297,11 @@ const App = () => {
       ////   place preview on hover  ////
       const service = new window.google.maps.places.PlacesService(map);
       
+      // cross button removed
+      const style = document.createElement('style');
+      style.innerHTML = `.gm-ui-hover-effect { display: none !important; }`;
+      document.head.appendChild(style);
+
       //// on hover detail with card ////
       marker.addListener("mouseover", () => {
           service.getDetails(
@@ -360,9 +365,8 @@ const App = () => {
                       box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     </div>
                   </div>
-                  
                 `;
-
+                
                 // Show info window
                 infoWindow.setContent(content);
                 infoWindow.open(map, marker);
@@ -375,22 +379,6 @@ const App = () => {
           marker.addListener("mouseout", () => {
             infoWindow.close();
           });    
-
-      // marker.addListener("mouseover", () => {
-      //   const content = `
-      //     <div style="max-width:220px">
-      //       <strong>${restaurant.name}</strong><br/>
-      //       ${restaurant.address || ""}<br/>
-      //       ${restaurant.rating ? `⭐ ${restaurant.rating}` : ""}
-      //     </div>
-      //   `;
-      //   infoWindow.setContent(content);
-      //   infoWindow.open(map, marker);
-      // });
-
-      // marker.addListener("mouseout", () => {
-      //   infoWindow.close();
-      // });
 
       console.log("Restaurant Data:", restaurant);
 
@@ -442,12 +430,17 @@ const App = () => {
     // Clear existing markers and routes
     markers.forEach((m) => m.setMap(null));
     if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
-
+    
+    //marker size updated after zoom /////
     const marker = new window.google.maps.Marker({
       position: { lat: selected.lat, lng: selected.lon },
       map,
       title: selected.name,
-      icon: { url: "/public/placeholder.png" }
+      icon: {
+        url: "/placeholder.png",
+        scaledSize: new window.google.maps.Size(40, 40),
+        anchor: new window.google.maps.Point(20, 40)
+      }
     });
 
     setMarkers([marker]);
@@ -511,11 +504,27 @@ const App = () => {
 
     let departureTime = null;
     const currentTravelMode = "driving";
-    if (currentTravelMode === "driving" && selectedDate && selectedTime) {
-      const dateTimeString = `${selectedDate}T${selectedTime}:00`;
-      const selectedDateTime = new Date(dateTimeString);
-      if (selectedDateTime.getTime() > Date.now()) {
-        departureTime = Math.floor(selectedDateTime.getTime() / 1000);
+    // if (currentTravelMode === "driving" && selectedDate && selectedTime) {
+    //   const dateTimeString = `${selectedDate}T${selectedTime}:00`;
+    //   const selectedDateTime = new Date(dateTimeString);
+    //   if (selectedDateTime.getTime() > Date.now()) {
+    //     departureTime = Math.floor(selectedDateTime.getTime() / 1000);
+    //   } else {
+    //     departureTime = Math.floor(Date.now() / 1000);
+    //   }
+    // }
+    // Use AntD DatePicker's selectedDateTime for traffic prediction
+    if (currentTravelMode === "driving" && selectedDateTime) {
+      // selectedDateTime is a string like '2025-08-17 15:30' or dayjs object
+      let dtString = selectedDateTime;
+      // If AntD DatePicker returns a dayjs object, convert to string
+      if (typeof selectedDateTime === 'object' && selectedDateTime.format) {
+        dtString = selectedDateTime.format('YYYY-MM-DD HH:mm');
+      }
+      // Convert to ISO string for Date constructor
+      const jsDate = new Date(dtString.replace(' ', 'T'));
+      if (!isNaN(jsDate.getTime()) && jsDate.getTime() > Date.now()) {
+        departureTime = Math.floor(jsDate.getTime() / 1000);
       } else {
         departureTime = Math.floor(Date.now() / 1000);
       }
@@ -852,67 +861,10 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Traffic Prediction */}
-                {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                  <p className="text-gray-700 font-semibold mb-3 text-sm">
-                    ⏰ Traffic Prediction (Driving Only)
-                  </p>
-                  <div>
-                    <label
-                      htmlFor="trafficDateTime"
-                      className="block text-gray-600 text-xs font-semibold mb-1"
-                    >
-                      Date & Time:
-                    </label>
-                    <DatePicker
-                      id="trafficDateTime"
-                      showTime={{ format: "HH:mm" }}
-                      format="YYYY-MM-DD HH:mm"
-                      value={selectedDateTime ? dayjs(selectedDateTime) : null}
-                      onChange={(date, dateString) => setSelectedDateTime(dateString)}
-                      className="w-full"
-                    />
-                  </div>
-                </div> */}
-
-                {/* Traffic Prediction */}
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                  <p className="text-gray-700 font-semibold mb-3 text-sm">
-                    ⏰ Traffic Prediction (Driving Only)
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label
-                        htmlFor="selectedDate"
-                        className="block text-gray-600 text-xs font-semibold mb-1"
-                      >
-                        Date:
-                      </label>
-                      <input
-                        type="date"
-                        id="selectedDate"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="selectedTime"
-                        className="block text-gray-600 text-xs font-semibold mb-1"
-                      >
-                        Time:
-                      </label>
-                      <input
-                        type="time"
-                        id="selectedTime"
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <TrafficPrediction
+                  selectedDateTime={selectedDateTime}
+                  setSelectedDateTime={setSelectedDateTime}
+                />
 
                 {/* Search Radius */}
                 <div>
@@ -1097,17 +1049,41 @@ const App = () => {
     key={location.place_id}
     className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
     onMouseEnter={() => {
-      markers.forEach((marker) => {
-        marker.setIcon(
-          marker.place_id === location.place_id
-            ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
-            : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
-        );
+      markers.forEach((marker, idx) => {
+        // Location 1 and 2 are always the first two markers
+        if (idx === 0 || idx === 1) {
+          marker.setIcon({
+            url: "/bluePin.png",
+            scaledSize: new window.google.maps.Size(30, 30),
+            anchor: new window.google.maps.Point(15, 30)
+          });
+        } else if (marker.place_id === location.place_id) {
+          marker.setIcon("http://maps.google.com/mapfiles/ms/icons/yellow-dot.png");
+        } else {
+          marker.setIcon({
+            url: "/placeholder.png",
+            scaledSize: new window.google.maps.Size(40, 40),
+            anchor: new window.google.maps.Point(20, 40)
+          });
+        }
       });
     }}
     onMouseLeave={() => {
-      markers.forEach((marker) => {
-        marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+      markers.forEach((marker, idx) => {
+        // Location 1 and 2 are always the first two markers
+        if (idx === 0 || idx === 1) {
+          marker.setIcon({
+            url: "/bluePin.png",
+            scaledSize: new window.google.maps.Size(30, 30),
+            anchor: new window.google.maps.Point(15, 30)
+          });
+        } else {
+          marker.setIcon({
+            url: "/placeholder.png",
+            scaledSize: new window.google.maps.Size(40, 40),
+            anchor: new window.google.maps.Point(20, 40)
+          });
+        }
       });
     }}
     onClick={() => {

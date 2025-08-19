@@ -246,7 +246,7 @@ const App = () => {
         title: midwayRestaurant.name,
         label: "R",
         icon: {
-          url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Red dot for restaurant
+          url: "/placeholder.png", // Red dot for restaurant
         },
       });
       newMarkers.push(restMarker);
