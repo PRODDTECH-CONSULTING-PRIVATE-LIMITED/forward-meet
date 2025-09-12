@@ -192,6 +192,7 @@ async function getPlaceDetails(placeId) {
 
 // API endpoint to find a midway restaurant
 app.post("/api/find_midway_restaurant", async (req, res) => {
+
   const {
     location1,
     location2,
@@ -201,6 +202,13 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
     departureTime,
     placeType,
   } = req.body;
+
+  // Debug: Log the received departureTime and its readable value
+  if (departureTime) {
+    console.log('Received departureTime (UNIX):', departureTime, '| Date:', new Date(departureTime * 1000).toString());
+  } else {
+    console.log('No departureTime received');
+  }
 
   if (!location1 || !location2) {
     return res.status(400).json({ error: "Please provide both locations." });

@@ -3,8 +3,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
-import MapComponent from "./components/MapComponent";
-import { MarkerClusterer } from "@googlemaps/markerclusterer";
+import Header from "./components/header/Index";
+import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
 
 // Main App component
@@ -60,12 +60,6 @@ const App = () => {
   const [isDetailedView, setIsDetailedView] = useState(false);
   const [detailedPlaceId, setDetailedPlaceId] = useState(null);
 
-  //Side Panel Toggle
-  const [showSidebar, setShowSidebar] = useState(true);
-
-  //AntD Integeration
-  const [selectedDateTime, setSelectedDateTime] = useState(null);
-
   // Check for library loading
   useEffect(() => {
     const checkLibraries = async () => {
@@ -120,22 +114,6 @@ const App = () => {
     };
   }, [mapsLoaded]);
 
-     // Keep Google Map resized when window or panel changes
-    useEffect(() => {
-      const handleResize = () => {
-        if (map) {
-          window.google.maps.event.trigger(map, "resize");
-          // Optional: keep the map centered after resize
-          const currentCenter = map.getCenter();
-          map.setCenter(currentCenter);
-        }
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, [map]);
- 
-
   // Initialize autocomplete
   useEffect(() => {
     if (mapsLoaded && window.google?.maps?.places) {
@@ -150,24 +128,40 @@ const App = () => {
     }
   }, [userLocation, mapsLoaded]);
 
-  // Function to initialize the Google Map
-  const initMap = () => {
-    if (mapRef.current && window.google?.maps?.Map && !map) {
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: { lat: 20.5937, lng: 78.9629 },
-        zoom: 5,
-        mapId: "DEMO_MAP_ID",
-      });
-      setMap(googleMap);
-      setDirectionsService(new window.google.maps.DirectionsService());
-      setDirectionsRenderer(
-        new window.google.maps.DirectionsRenderer({
-          map: googleMap,
-          suppressMarkers: true,
-        })
-      );
-    }
-  };
+const cleanMapStyles = [
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.government", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.medical", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.place_of_worship", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.school", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.sports_complex", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.park", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.attraction", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "transit.station", stylers: [{ visibility: "off" }] },
+  { featureType: "transit.line", stylers: [{ visibility: "off" }] },
+];
+
+const initMap = () => {
+  if (mapRef.current && window.google?.maps?.Map) {
+    const googleMap = new window.google.maps.Map(mapRef.current, {
+      center: { lat: 20.5937, lng: 78.9629 },
+      zoom: 5,
+      // clickableIcons: false,
+      styles: cleanMapStyles
+    });
+    
+    setMap(googleMap);
+    setDirectionsService(new window.google.maps.DirectionsService());
+    setDirectionsRenderer(
+      new window.google.maps.DirectionsRenderer({
+        map: googleMap,
+        suppressMarkers: true,
+      })
+    );
+  }
+};
 
   // Function to initialize Google Places Autocomplete
   const initAutocomplete = (useBounds = true) => {
@@ -227,7 +221,6 @@ const App = () => {
 
   // Helper function to show all markers and routes
   const showMarkersForAllPlaces = () => {
-    
     if (!map || !directionsService || !directionsRenderer || midwayRestaurants.length === 0) return;
 
     // Clear old markers and routes
@@ -250,23 +243,29 @@ const App = () => {
       position: loc1Coords,
       map,
       title: "Location 1",
-      // label: "1",
-      icon: {
-        url: "/bluePin.png", 
-        scaledSize: new window.google.maps.Size(40, 40),
-        anchor: new window.google.maps.Point(20, 40)
-      }
+      label: "1",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // icon: {
+      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
+      //   fillColor: "red",
+      //   fillOpacity: 0.8,
+      //   strokeWeight: 0,
+      //   scale: 2,
+      // }
     });
     const loc2Marker = new window.google.maps.Marker({
       position: loc2Coords,
       map,
       title: "Location 2",
-      // label: "2",
-      icon: {
-        url: "/bluePin.png", 
-        scaledSize: new window.google.maps.Size(40, 40),
-        anchor: new window.google.maps.Point(20, 40)
-      }
+      label: "2",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // icon: {
+      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
+      //   fillColor: "red",
+      //   fillOpacity: 0.8,
+      //   strokeWeight: 0,
+      //   scale: 2,
+      // }
     });
 
     newMarkers.push(loc1Marker, loc2Marker);
@@ -280,13 +279,20 @@ const App = () => {
     midwayRestaurants.forEach((restaurant, index) => {
 
       const coords = { lat: restaurant.lat, lng: restaurant.lon };
-      
+      // const marker = new window.google.maps.Marker({
+      //   position: coords,
+      //   map,
+      //   title: restaurant.name,
+      //   label: String.fromCharCode(65 + index),
+      //   icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      // });
+
       //new marker
       const marker = new window.google.maps.Marker({
         position: coords,
         map,
         title: restaurant.name,
-        // label: String.fromCharCode(65 + index),
+        label: String.fromCharCode(65 + index),
         icon: { 
           url: "/placeholder.png" ,
           scaledSize: new window.google.maps.Size(40, 40),
@@ -297,11 +303,6 @@ const App = () => {
       ////   place preview on hover  ////
       const service = new window.google.maps.places.PlacesService(map);
       
-      // cross button removed
-      const style = document.createElement('style');
-      style.innerHTML = `.gm-ui-hover-effect { display: none !important; }`;
-      document.head.appendChild(style);
-
       //// on hover detail with card ////
       marker.addListener("mouseover", () => {
           service.getDetails(
@@ -362,11 +363,11 @@ const App = () => {
                       height: 0;
                       border-left: 8px solid transparent;
                       border-right: 8px solid transparent;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    </div>
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                   </div>
+                  
                 `;
-                
+
                 // Show info window
                 infoWindow.setContent(content);
                 infoWindow.open(map, marker);
@@ -379,6 +380,22 @@ const App = () => {
           marker.addListener("mouseout", () => {
             infoWindow.close();
           });    
+
+      // marker.addListener("mouseover", () => {
+      //   const content = `
+      //     <div style="max-width:220px">
+      //       <strong>${restaurant.name}</strong><br/>
+      //       ${restaurant.address || ""}<br/>
+      //       ${restaurant.rating ? `⭐ ${restaurant.rating}` : ""}
+      //     </div>
+      //   `;
+      //   infoWindow.setContent(content);
+      //   infoWindow.open(map, marker);
+      // });
+
+      // marker.addListener("mouseout", () => {
+      //   infoWindow.close();
+      // });
 
       console.log("Restaurant Data:", restaurant);
 
@@ -394,12 +411,6 @@ const App = () => {
 
     setMarkers(newMarkers);
     map.fitBounds(bounds);
-
-    //clustering///////
-    // new MarkerClusterer({ 
-    //   map,
-    //   markers: newMarkers
-    // }); 
 
     window.google.maps.event.trigger(map, "resize");
 
@@ -422,30 +433,104 @@ const App = () => {
     });
   };
 
-  // Helper function to show only the selected place marker
+  // // Helper function to show only the selected place marker
+  // const showMarkerForPlace = (placeId) => {
+  //   const selected = midwayRestaurants.find((p) => p.place_id === placeId);
+  //   if (!map || !selected) return;
+
+  //   // Clear existing markers and routes
+  //   markers.forEach((m) => m.setMap(null));
+  //   if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+
+  //   const marker = new window.google.maps.Marker({
+  //     position: { lat: selected.lat, lng: selected.lon },
+  //     map,
+  //     title: selected.name,
+  //     icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+  //   });
+
+  //   setMarkers([marker]);
+  //   map.setCenter({ lat: selected.lat, lng: selected.lon });
+  //   map.setZoom(16);
+  // };
+ 
+  // Helper function to show only the selected place marker with route
   const showMarkerForPlace = (placeId) => {
     const selected = midwayRestaurants.find((p) => p.place_id === placeId);
-    if (!map || !selected) return;
+    if (!map || !selected || !directionsService || !directionsRenderer) return;
 
     // Clear existing markers and routes
     markers.forEach((m) => m.setMap(null));
-    if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
-    
-    //marker size updated after zoom /////
-    const marker = new window.google.maps.Marker({
-      position: { lat: selected.lat, lng: selected.lon },
+    directionsRenderer.setDirections({ routes: [] });
+
+    const newMarkers = [];
+
+    // Coordinates for the locations
+    const loc1Coords = {
+      lat: selected.loc1_lat,
+      lng: selected.loc1_lon
+    };
+    const loc2Coords = {
+      lat: selected.loc2_lat,
+      lng: selected.loc2_lon
+    };
+    const selectedPlaceCoords = {
+      lat: selected.lat,
+      lng: selected.lon
+    };
+
+    const loc1Marker = new window.google.maps.Marker({
+      position: loc1Coords,
       map,
-      title: selected.name,
-      icon: {
-        url: "/placeholder.png",
-        scaledSize: new window.google.maps.Size(40, 40),
-        anchor: new window.google.maps.Point(20, 40)
-      }
+      title: "Location 1",
+      label: "1",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+    });
+    
+    const loc2Marker = new window.google.maps.Marker({
+      position: loc2Coords,
+      map,
+      title: "Location 2", 
+      label: "2",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
     });
 
-    setMarkers([marker]);
+    const selectedMarker = new window.google.maps.Marker({
+      position: selectedPlaceCoords,
+      map,
+      title: selected.name,
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+    });
+
+    newMarkers.push(loc1Marker, loc2Marker, selectedMarker);
+    setMarkers(newMarkers);
     map.setCenter({ lat: selected.lat, lng: selected.lon });
     map.setZoom(16);
+
+   // Display route through the selected place
+    directionsService.route({
+      origin: loc1Coords,
+      destination: loc2Coords,
+      waypoints: [{
+        location: selectedPlaceCoords,
+        stopover: true
+      }],
+      travelMode: "DRIVING",
+    }, (result, status) => {
+      if (status === "OK") {
+        const currentCenter = map.getCenter();
+        const currentZoom = map.getZoom();
+        
+        directionsRenderer.setDirections(result);
+        setTimeout(() => {
+          map.setCenter(currentCenter);
+          map.setZoom(currentZoom);
+        }, 20);
+      } else {
+        console.error("Directions request failed due to " + status);
+        setError("Could not display route on map: " + status);
+      }
+    });
   };
 
   // Update map based on detailed view state
@@ -504,27 +589,11 @@ const App = () => {
 
     let departureTime = null;
     const currentTravelMode = "driving";
-    // if (currentTravelMode === "driving" && selectedDate && selectedTime) {
-    //   const dateTimeString = `${selectedDate}T${selectedTime}:00`;
-    //   const selectedDateTime = new Date(dateTimeString);
-    //   if (selectedDateTime.getTime() > Date.now()) {
-    //     departureTime = Math.floor(selectedDateTime.getTime() / 1000);
-    //   } else {
-    //     departureTime = Math.floor(Date.now() / 1000);
-    //   }
-    // }
-    // Use AntD DatePicker's selectedDateTime for traffic prediction
-    if (currentTravelMode === "driving" && selectedDateTime) {
-      // selectedDateTime is a string like '2025-08-17 15:30' or dayjs object
-      let dtString = selectedDateTime;
-      // If AntD DatePicker returns a dayjs object, convert to string
-      if (typeof selectedDateTime === 'object' && selectedDateTime.format) {
-        dtString = selectedDateTime.format('YYYY-MM-DD HH:mm');
-      }
-      // Convert to ISO string for Date constructor
-      const jsDate = new Date(dtString.replace(' ', 'T'));
-      if (!isNaN(jsDate.getTime()) && jsDate.getTime() > Date.now()) {
-        departureTime = Math.floor(jsDate.getTime() / 1000);
+    if (currentTravelMode === "driving" && selectedDate && selectedTime) {
+      const dateTimeString = `${selectedDate}T${selectedTime}:00`;
+      const selectedDateTime = new Date(dateTimeString);
+      if (selectedDateTime.getTime() > Date.now()) {
+        departureTime = Math.floor(selectedDateTime.getTime() / 1000);
       } else {
         departureTime = Math.floor(Date.now() / 1000);
       }
@@ -661,7 +730,7 @@ const App = () => {
       </div>
     );
   }
-  
+
   return (
     <div
       className="grid h-screen bg-gray-100"
@@ -671,7 +740,7 @@ const App = () => {
       <div className="min-w-[350px] max-w-full h-screen bg-white shadow-xl overflow-y-auto border-r">
         <div className="p-6 w-full">
           {/* Header */}
-          <div className="text-center mb-6 w-full">
+          {/* <div className="text-center mb-6 w-full">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4">
               <svg
                 className="w-6 h-6 text-white"
@@ -699,7 +768,8 @@ const App = () => {
             <p className="text-sm text-gray-600 leading-relaxed">
               Find the perfect meeting spot between two locations
             </p>
-          </div>
+          </div> */}
+          <Header />
 
           {!showFilters && midwayRestaurants.length > 0 && (
             <div className="mb-4 flex justify-center">
@@ -750,7 +820,7 @@ const App = () => {
               }`}
             >
               <form onSubmit={handleSearch} className="space-y-4 w-full">
-                {/* Location Inputs */}
+                {/* Location Inputs
                 <div className="space-y-4 w-full">
                   <div className="w-full">
                     <label
@@ -797,6 +867,25 @@ const App = () => {
                       required
                     />
                   </div>
+                </div> */}
+                <div className="flex flex-col gap-4">
+                  <LocationSelector
+                  location1={location1}
+                  location2={location2}
+                  setLocation1={setLocation1}
+                  setLocation2={setLocation2}
+                  location1InputRef={location1InputRef}
+                  location2InputRef={location2InputRef}
+                  onInputsVisible={() => {
+                    // Re-initialize autocomplete when inputs become visible
+                    if (userLocation) {
+                      initAutocomplete(true);
+                    } else {
+                      initAutocomplete(false);
+                    }
+                  }}
+                /> 
+                <TrafficPrediction/>
                 </div>
 
                 {/* Place Type Selection */}
@@ -861,10 +950,45 @@ const App = () => {
                   </div>
                 </div>
 
-                <TrafficPrediction
-                  selectedDateTime={selectedDateTime}
-                  setSelectedDateTime={setSelectedDateTime}
-                />
+                {/* Traffic Prediction */}
+                {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                  <p className="text-gray-700 font-semibold mb-3 text-sm">
+                    ⏰ Traffic Prediction (Driving Only)
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor="selectedDate"
+                        className="block text-gray-600 text-xs font-semibold mb-1"
+                      >
+                        Date:
+                      </label>
+                      <input
+                        type="date"
+                        id="selectedDate"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="selectedTime"
+                        className="block text-gray-600 text-xs font-semibold mb-1"
+                      >
+                        Time:
+                      </label>
+                      <input
+                        type="time"
+                        id="selectedTime"
+                        value={selectedTime}
+                        onChange={(e) => setSelectedTime(e.target.value)}
+                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div> */}
+                {/* <TrafficPrediction/> */}
 
                 {/* Search Radius */}
                 <div>
@@ -1042,61 +1166,38 @@ const App = () => {
                   setIsDetailedView={setIsDetailedView}
                 />
               )}
-  {/* Restaurant Cards */}
-  {!isDetailedView && currentItems.map((location, index) => (
-  <div
-    id={`place-${location.place_id}`} // for scrolling from marker
-    key={location.place_id}
-    className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
-    onMouseEnter={() => {
-      markers.forEach((marker, idx) => {
-        // Location 1 and 2 are always the first two markers
-        if (idx === 0 || idx === 1) {
-          marker.setIcon({
-            url: "/bluePin.png",
-            scaledSize: new window.google.maps.Size(30, 30),
-            anchor: new window.google.maps.Point(15, 30)
-          });
-        } else if (marker.place_id === location.place_id) {
-          marker.setIcon("http://maps.google.com/mapfiles/ms/icons/yellow-dot.png");
-        } else {
-          marker.setIcon({
-            url: "/placeholder.png",
-            scaledSize: new window.google.maps.Size(40, 40),
-            anchor: new window.google.maps.Point(20, 40)
-          });
-        }
-      });
-    }}
-    onMouseLeave={() => {
-      markers.forEach((marker, idx) => {
-        // Location 1 and 2 are always the first two markers
-        if (idx === 0 || idx === 1) {
-          marker.setIcon({
-            url: "/bluePin.png",
-            scaledSize: new window.google.maps.Size(30, 30),
-            anchor: new window.google.maps.Point(15, 30)
-          });
-        } else {
-          marker.setIcon({
-            url: "/placeholder.png",
-            scaledSize: new window.google.maps.Size(40, 40),
-            anchor: new window.google.maps.Point(20, 40)
-          });
-        }
-      });
-    }}
-    onClick={() => {
-      setIsDetailedView(true);
-      setDetailedPlaceId(location.place_id);
-    }}
-  >
-    <GooglePlaceCardCompact
-      placeId={location.place_id}
-      locationInfo={location}
-    />
-  </div>
-))}
+
+              {/* Restaurant Cards */}
+              {!isDetailedView && currentItems.map((location, index) => (
+              <div
+                id={`place-${location.place_id}`} // for scrolling from marker
+                key={location.place_id}
+                className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                onMouseEnter={() => {
+                  markers.forEach((marker) => {
+                    marker.setIcon(
+                      marker.place_id === location.place_id
+                        ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                    );
+                  });
+                }}
+                onMouseLeave={() => {
+                  markers.forEach((marker) => {
+                    marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+                  });
+                }}
+                onClick={() => {
+                  setIsDetailedView(true);
+                  setDetailedPlaceId(location.place_id);
+                }}
+              >
+                <GooglePlaceCardCompact
+                  placeId={location.place_id}
+                  locationInfo={location}
+                />
+              </div>
+            ))}
 
               {/* Pagination Controls */}
               {totalPages > 1 && !isDetailedView && (
@@ -1188,7 +1289,9 @@ const App = () => {
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200 z-10">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-gray-700">Map Active</span>
+            <span className="text-sm font-medium text-gray-700">
+              Map Active
+            </span>
           </div>
         </div>
       </div>

@@ -1,31 +1,34 @@
-import { DatePicker, Button } from "antd";
+import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import { CalendarOutlined } from '@ant-design/icons';
 
 const TrafficPrediction = (props) => {
-    const {selectedDateTime, setSelectedDateTime} = props;  
-    return (
+    const { selectedDateTime, setSelectedDateTime } = props;
 
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <p className="text-gray-700 font-semibold mb-3 text-sm">
-                ⏰ Traffic Prediction (Driving Only)
-                </p>
-                <div>
-                <label
-                htmlFor="trafficDateTime"
-                className="block text-gray-600 text-xs font-semibold mb-1"
-                >
-                Date & Time:
-                </label>
-                <DatePicker
+    return (
+        <div className="">
+            <DatePicker
                 id="trafficDateTime"
                 showTime={{ format: "HH:mm" }}
                 format="YYYY-MM-DD HH:mm"
                 value={selectedDateTime ? dayjs(selectedDateTime) : null}
                 onChange={(date, dateString) => setSelectedDateTime(dateString)}
-                className="w-full"
-                />
-            </div>
+                placeholder="Select Date and Time"
+                suffixIcon={<CalendarOutlined style={{ color: 'white' }} />}
+                style={{
+                    width: '229px',
+                    height: '48px',
+                    background: '#8659FF',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: 'white',
+                    textcolor: 'white',
+                    fontWeight:"bold"
+                }}
+                className="text-white font-medium"
+            />
         </div>
-    )
-}  
-export default TrafficPrediction;           
+    );
+};
+
+export default TrafficPrediction;

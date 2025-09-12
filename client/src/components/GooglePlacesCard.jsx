@@ -4,7 +4,7 @@ import React, { useRef, useEffect } from "react";
 const CheckIcon = () => <span style={{ color: "#4285F4", marginRight: "6px" }}>✅</span>;
 const CrossIcon = () => <span style={{ color: "#D93025", marginRight: "6px" }}>❌</span>;
 
-const GooglePlaceCard = ({ placeId, setDetailedPlaceId, setIsDetailedView }) => {
+const GooglePlaceCard = ({ placeId, setDetailedPlaceId, setIsDetailedView, onPhotoClick }) => {
   const ref = useRef(null);
 
   useEffect(() => {
