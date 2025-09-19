@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { InfoWindow } from "@react-google-maps/api";
+
+const [hoveredPlace, setHoveredPlace] = useState(null);////
 
 const containerStyle = {
   width: "100%",
@@ -238,47 +241,6 @@ function RestaurantLocator() {
         >
           Restaurants Near You
         </h2>
-        {/* {restaurants.length > 0 ? (
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {restaurants.map((restaurant) => (
-              <li
-                key={restaurant.place_id}
-                style={{
-                  marginBottom: "15px",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  backgroundColor: "#fff",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                }}
-              >
-                <h3 style={{ margin: "0 0 5px 0", color: "#007bff" }}>
-                  {restaurant.name}
-                </h3>
-                <p
-                  style={{
-                    margin: "0 0 5px 0",
-                    color: "#555",
-                    fontSize: "0.9em",
-                  }}
-                >
-                  {restaurant.vicinity}
-                </p>
-                {restaurant.rating && (
-                  <p style={{ margin: "0", color: "#666", fontSize: "0.85em" }}>
-                    ⭐ Rating: {restaurant.rating} (
-                    {restaurant.user_ratings_total || 0} reviews)
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p style={{ color: "#777", textAlign: "center", paddingTop: "20px" }}>
-            No restaurants found nearby. Try adjusting the search area or
-            radius.
-          </p>
-        )} */}
       </div>
 
       {/* Right panel for the Google Map */}
@@ -307,6 +269,20 @@ function RestaurantLocator() {
               title={restaurant.name}
             />
           ))}
+
+          {hoveredPlace && (
+            <InfoWindow
+              position={{ lat: hoveredPlace.lat, lng: hoveredPlace.lng }}
+              onCloseClick={() => setHoveredPlace(null)}
+            >
+              <div style={{ minWidth: "200px" }}>
+                <strong>{hoveredPlace.name}</strong>
+                <p>{hoveredPlace.vicinity}</p>
+                <p>Rating: {hoveredPlace.rating || "N/A"}</p>
+              </div>
+            </InfoWindow>
+          )}
+
 
           {center && (
             <Marker

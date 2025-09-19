@@ -3,6 +3,9 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
+import Header from "./components/header/Index";
+import LocationSelector from "./components/location-selector";
+import TrafficPrediction from "./components/TrafficPrediction";
 
 // Main App component
 const App = () => {
@@ -125,24 +128,40 @@ const App = () => {
     }
   }, [userLocation, mapsLoaded]);
 
-  // Function to initialize the Google Map
-  const initMap = () => {
-    if (mapRef.current && window.google?.maps?.Map) {
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: { lat: 20.5937, lng: 78.9629 },
-        zoom: 5,
-        mapId: "DEMO_MAP_ID",
-      });
-      setMap(googleMap);
-      setDirectionsService(new window.google.maps.DirectionsService());
-      setDirectionsRenderer(
-        new window.google.maps.DirectionsRenderer({
-          map: googleMap,
-          suppressMarkers: true,
-        })
-      );
-    }
-  };
+const cleanMapStyles = [
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.government", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.medical", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.place_of_worship", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.school", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.sports_complex", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.park", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.attraction", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "transit.station", stylers: [{ visibility: "off" }] },
+  { featureType: "transit.line", stylers: [{ visibility: "off" }] },
+];
+
+const initMap = () => {
+  if (mapRef.current && window.google?.maps?.Map) {
+    const googleMap = new window.google.maps.Map(mapRef.current, {
+      center: { lat: 20.5937, lng: 78.9629 },
+      zoom: 5,
+      // clickableIcons: false,
+      styles: cleanMapStyles
+    });
+    
+    setMap(googleMap);
+    setDirectionsService(new window.google.maps.DirectionsService());
+    setDirectionsRenderer(
+      new window.google.maps.DirectionsRenderer({
+        map: googleMap,
+        suppressMarkers: true,
+      })
+    );
+  }
+};
 
   // Function to initialize Google Places Autocomplete
   const initAutocomplete = (useBounds = true) => {
@@ -226,6 +245,13 @@ const App = () => {
       title: "Location 1",
       label: "1",
       icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // icon: {
+      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
+      //   fillColor: "red",
+      //   fillOpacity: 0.8,
+      //   strokeWeight: 0,
+      //   scale: 2,
+      // }
     });
     const loc2Marker = new window.google.maps.Marker({
       position: loc2Coords,
@@ -233,6 +259,13 @@ const App = () => {
       title: "Location 2",
       label: "2",
       icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      // icon: {
+      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
+      //   fillColor: "red",
+      //   fillOpacity: 0.8,
+      //   strokeWeight: 0,
+      //   scale: 2,
+      // }
     });
 
     newMarkers.push(loc1Marker, loc2Marker);
@@ -241,21 +274,145 @@ const App = () => {
     bounds.extend(loc1Coords);
     bounds.extend(loc2Coords);
 
+    const infoWindow = new window.google.maps.InfoWindow();
+
     midwayRestaurants.forEach((restaurant, index) => {
+
       const coords = { lat: restaurant.lat, lng: restaurant.lon };
+      // const marker = new window.google.maps.Marker({
+      //   position: coords,
+      //   map,
+      //   title: restaurant.name,
+      //   label: String.fromCharCode(65 + index),
+      //   icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      // });
+
+      //new marker
       const marker = new window.google.maps.Marker({
         position: coords,
         map,
         title: restaurant.name,
         label: String.fromCharCode(65 + index),
-        icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+        icon: { 
+          url: "/placeholder.png" ,
+          scaledSize: new window.google.maps.Size(40, 40),
+          anchor: new window.google.maps.Point(20, 40)
+        }
       });
+
+      ////   place preview on hover  ////
+      const service = new window.google.maps.places.PlacesService(map);
+      
+      //// on hover detail with card ////
+      marker.addListener("mouseover", () => {
+          service.getDetails(
+            {
+              placeId: restaurant.place_id,
+              fields: ["name", "formatted_address", "rating", "user_ratings_total", "photos", "types"]
+
+            },
+            (place, status) => {
+              if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+
+                //Display name
+                const name =
+                    place?.name ||
+                    restaurant?.name ||
+                    place?.formatted_address ||
+                    "Unknown Place";
+                
+                // Displays photo if available
+                const photoUrl =
+                  place.photos && place.photos.length > 0
+                    ? place.photos[0].getUrl({ maxWidth: 300, maxHeight: 180 })
+                    : "";
+
+                // Rating display
+                const stars = place.rating
+                ? `${'★'.repeat(Math.floor(place.rating))}${place.rating % 1 ? '½' : ''}`
+                    .padEnd(5, '☆') // fill remaining stars
+                    .replace(/★/g, '<span style="color:#fbbc04;">★</span>')
+                    .replace(/½/g, '<span style="color:#fbbc04;">★</span><span style="color:#fbbc04; opacity:0.5;">★</span>') +
+                  ` <span style="color:#555;">(${place.user_ratings_total})</span>`
+                : "";
+                // HTML for the card
+                const content = `
+                  <div style="
+                    width: 260px;
+                    font-family: Roboto, Arial, sans-serif;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                    overflow: hidden;
+                    animation: fadeIn 0.2s ease-out;
+                    position: relative;
+                  ">
+                    ${photoUrl ? `<img src="${photoUrl}" style="width:100%; height:150px; object-fit:cover;"/>` : ""}
+                    <div style="padding: 8px;">
+                      <div style="font-size:20px; font-weight:bold; margin-bottom:4px; color:black;">
+                          ${name}
+                      </div>
+                      <div style="font-size:15px; color:#555; margin-bottom:6px;">${place.formatted_address || ""}</div>
+                      <div style="font-size:13px;">${stars}</div>
+                    </div>
+                    <div style="
+                      position: absolute;
+                      bottom: -8px;
+                      left: 20px;
+                      width: 0;
+                      height: 0;
+                      border-left: 8px solid transparent;
+                      border-right: 8px solid transparent;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  </div>
+                  
+                `;
+
+                // Show info window
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+              }
+            }
+          );
+        });
+
+      // Close card on mouseout
+          marker.addListener("mouseout", () => {
+            infoWindow.close();
+          });    
+
+      // marker.addListener("mouseover", () => {
+      //   const content = `
+      //     <div style="max-width:220px">
+      //       <strong>${restaurant.name}</strong><br/>
+      //       ${restaurant.address || ""}<br/>
+      //       ${restaurant.rating ? `⭐ ${restaurant.rating}` : ""}
+      //     </div>
+      //   `;
+      //   infoWindow.setContent(content);
+      //   infoWindow.open(map, marker);
+      // });
+
+      // marker.addListener("mouseout", () => {
+      //   infoWindow.close();
+      // });
+
+      console.log("Restaurant Data:", restaurant);
+
+      marker.addListener("click", () => {
+        // console.log("Restaurant Data:", restaurant);
+        setDetailedPlaceId(restaurant.place_id); 
+        setIsDetailedView(true);
+      });
+
       newMarkers.push(marker);
       bounds.extend(coords);
     });
 
     setMarkers(newMarkers);
     map.fitBounds(bounds);
+
+    window.google.maps.event.trigger(map, "resize");
 
     // Display route
     directionsService.route({
@@ -276,25 +433,104 @@ const App = () => {
     });
   };
 
-  // Helper function to show only the selected place marker
+  // // Helper function to show only the selected place marker
+  // const showMarkerForPlace = (placeId) => {
+  //   const selected = midwayRestaurants.find((p) => p.place_id === placeId);
+  //   if (!map || !selected) return;
+
+  //   // Clear existing markers and routes
+  //   markers.forEach((m) => m.setMap(null));
+  //   if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+
+  //   const marker = new window.google.maps.Marker({
+  //     position: { lat: selected.lat, lng: selected.lon },
+  //     map,
+  //     title: selected.name,
+  //     icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+  //   });
+
+  //   setMarkers([marker]);
+  //   map.setCenter({ lat: selected.lat, lng: selected.lon });
+  //   map.setZoom(16);
+  // };
+ 
+  // Helper function to show only the selected place marker with route
   const showMarkerForPlace = (placeId) => {
     const selected = midwayRestaurants.find((p) => p.place_id === placeId);
-    if (!map || !selected) return;
+    if (!map || !selected || !directionsService || !directionsRenderer) return;
 
     // Clear existing markers and routes
     markers.forEach((m) => m.setMap(null));
-    if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+    directionsRenderer.setDirections({ routes: [] });
 
-    const marker = new window.google.maps.Marker({
-      position: { lat: selected.lat, lng: selected.lon },
+    const newMarkers = [];
+
+    // Coordinates for the locations
+    const loc1Coords = {
+      lat: selected.loc1_lat,
+      lng: selected.loc1_lon
+    };
+    const loc2Coords = {
+      lat: selected.loc2_lat,
+      lng: selected.loc2_lon
+    };
+    const selectedPlaceCoords = {
+      lat: selected.lat,
+      lng: selected.lon
+    };
+
+    const loc1Marker = new window.google.maps.Marker({
+      position: loc1Coords,
+      map,
+      title: "Location 1",
+      label: "1",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+    });
+    
+    const loc2Marker = new window.google.maps.Marker({
+      position: loc2Coords,
+      map,
+      title: "Location 2", 
+      label: "2",
+      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+    });
+
+    const selectedMarker = new window.google.maps.Marker({
+      position: selectedPlaceCoords,
       map,
       title: selected.name,
       icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
     });
 
-    setMarkers([marker]);
+    newMarkers.push(loc1Marker, loc2Marker, selectedMarker);
+    setMarkers(newMarkers);
     map.setCenter({ lat: selected.lat, lng: selected.lon });
     map.setZoom(16);
+
+   // Display route through the selected place
+    directionsService.route({
+      origin: loc1Coords,
+      destination: loc2Coords,
+      waypoints: [{
+        location: selectedPlaceCoords,
+        stopover: true
+      }],
+      travelMode: "DRIVING",
+    }, (result, status) => {
+      if (status === "OK") {
+        const currentCenter = map.getCenter();
+        const currentZoom = map.getZoom();
+        
+        directionsRenderer.setDirections(result);
+        setTimeout(() => {
+          map.setCenter(currentCenter);
+          map.setZoom(currentZoom);
+        }, 20);
+      } else {
+        console.error("Directions request failed due to " + status);
+        setError("Could not display route on map: " + status);
+      }
+    });
   };
 
   // Update map based on detailed view state
@@ -504,7 +740,7 @@ const App = () => {
       <div className="min-w-[350px] max-w-full h-screen bg-white shadow-xl overflow-y-auto border-r">
         <div className="p-6 w-full">
           {/* Header */}
-          <div className="text-center mb-6 w-full">
+          {/* <div className="text-center mb-6 w-full">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4">
               <svg
                 className="w-6 h-6 text-white"
@@ -532,7 +768,8 @@ const App = () => {
             <p className="text-sm text-gray-600 leading-relaxed">
               Find the perfect meeting spot between two locations
             </p>
-          </div>
+          </div> */}
+          <Header />
 
           {!showFilters && midwayRestaurants.length > 0 && (
             <div className="mb-4 flex justify-center">
@@ -583,7 +820,7 @@ const App = () => {
               }`}
             >
               <form onSubmit={handleSearch} className="space-y-4 w-full">
-                {/* Location Inputs */}
+                {/* Location Inputs
                 <div className="space-y-4 w-full">
                   <div className="w-full">
                     <label
@@ -630,6 +867,25 @@ const App = () => {
                       required
                     />
                   </div>
+                </div> */}
+                <div className="flex flex-col gap-4">
+                  <LocationSelector
+                  location1={location1}
+                  location2={location2}
+                  setLocation1={setLocation1}
+                  setLocation2={setLocation2}
+                  location1InputRef={location1InputRef}
+                  location2InputRef={location2InputRef}
+                  onInputsVisible={() => {
+                    // Re-initialize autocomplete when inputs become visible
+                    if (userLocation) {
+                      initAutocomplete(true);
+                    } else {
+                      initAutocomplete(false);
+                    }
+                  }}
+                /> 
+                <TrafficPrediction/>
                 </div>
 
                 {/* Place Type Selection */}
@@ -695,7 +951,7 @@ const App = () => {
                 </div>
 
                 {/* Traffic Prediction */}
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                   <p className="text-gray-700 font-semibold mb-3 text-sm">
                     ⏰ Traffic Prediction (Driving Only)
                   </p>
@@ -731,7 +987,8 @@ const App = () => {
                       />
                     </div>
                   </div>
-                </div>
+                </div> */}
+                {/* <TrafficPrediction/> */}
 
                 {/* Search Radius */}
                 <div>
@@ -912,20 +1169,35 @@ const App = () => {
 
               {/* Restaurant Cards */}
               {!isDetailedView && currentItems.map((location, index) => (
-                <div
-                  key={location.place_id}
-                  className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                  onClick={() => {
-                    setIsDetailedView(true);
-                    setDetailedPlaceId(location.place_id);
-                  }}
-                >
-                  <GooglePlaceCardCompact
-                    placeId={location.place_id}
-                    locationInfo={location}
-                  />
-                </div>
-              ))}
+              <div
+                id={`place-${location.place_id}`} // for scrolling from marker
+                key={location.place_id}
+                className="bg-gray-50 p-2 rounded-lg cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                onMouseEnter={() => {
+                  markers.forEach((marker) => {
+                    marker.setIcon(
+                      marker.place_id === location.place_id
+                        ? "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+                        : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+                    );
+                  });
+                }}
+                onMouseLeave={() => {
+                  markers.forEach((marker) => {
+                    marker.setIcon("http://maps.google.com/mapfiles/ms/icons/red-dot.png");
+                  });
+                }}
+                onClick={() => {
+                  setIsDetailedView(true);
+                  setDetailedPlaceId(location.place_id);
+                }}
+              >
+                <GooglePlaceCardCompact
+                  placeId={location.place_id}
+                  locationInfo={location}
+                />
+              </div>
+            ))}
 
               {/* Pagination Controls */}
               {totalPages > 1 && !isDetailedView && (
