@@ -1,12 +1,16 @@
 {
-  "name": "server",
+  "name": "forward-meet-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Forward Meet Backend Server",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "test": "jest",
+    "build": "npm install"
+  },
+  "engines": {
+    "node": "19.x"
   },
   "keywords": [],
   "author": "",
