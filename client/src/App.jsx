@@ -6,6 +6,8 @@ import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
 import Header from "./components/header/Index";
 import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
+import { API_ENDPOINTS } from "./config";
+import { DEMO_RESTAURANTS, isDemoMode } from "./demo-data";
 
 // Main App component
 const App = () => {
@@ -294,7 +296,7 @@ const initMap = () => {
         title: restaurant.name,
         label: String.fromCharCode(65 + index),
         icon: { 
-          url: "/placeholder.png" ,
+          url: `${import.meta.env.BASE_URL}placeholder.png`,
           scaledSize: new window.google.maps.Size(40, 40),
           anchor: new window.google.maps.Point(20, 40)
         }
@@ -600,8 +602,17 @@ const initMap = () => {
     }
 
     try {
+      // Use demo data if in demo mode (GitHub Pages)
+      if (isDemoMode()) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setMidwayRestaurants(DEMO_RESTAURANTS);
+        setShowFilters(false);
+        return;
+      }
+
       const response = await fetch(
-        "http://localhost:8080/api/find_midway_restaurant",
+        API_ENDPOINTS.FIND_MIDWAY,
         {
           method: "POST",
           headers: {
@@ -634,7 +645,7 @@ const initMap = () => {
       console.error("Fetch error:", err);
       if (err instanceof TypeError && err.message === "Failed to fetch") {
         setError(
-          "Failed to connect to the server. Please ensure the backend is running and accessible at http://localhost:8080."
+          "Failed to connect to the server. Please try again later."
         );
       } else {
         setError(
@@ -669,7 +680,7 @@ const initMap = () => {
       };
 
       const response = await fetch(
-        "http://localhost:8080/api/generate_invitation",
+        API_ENDPOINTS.GENERATE_INVITATION,
         {
           method: "POST",
           headers: {
@@ -770,6 +781,20 @@ const initMap = () => {
             </p>
           </div> */}
           <Header />
+          
+          {/* Demo Mode Banner */}
+          {isDemoMode() && (
+            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+              <div className="flex items-center">
+                <svg className="w-4 h-4 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <p className="text-blue-800 text-sm font-medium">
+                  Demo Mode - Sample data will be shown
+                </p>
+              </div>
+            </div>
+          )}
 
           {!showFilters && midwayRestaurants.length > 0 && (
             <div className="mb-4 flex justify-center">
@@ -885,7 +910,16 @@ const initMap = () => {
                     }
                   }}
                 /> 
-                <TrafficPrediction/>
+                <TrafficPrediction 
+                  selectedDateTime={selectedDate && selectedTime ? `${selectedDate}T${selectedTime}` : null}
+                  setSelectedDateTime={(dateTime) => {
+                    if (dateTime) {
+                      const [date, time] = dateTime.split('T');
+                      setSelectedDate(date);
+                      setSelectedTime(time);
+                    }
+                  }}
+                />
                 </div>
 
                 {/* Place Type Selection */}
