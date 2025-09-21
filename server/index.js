@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
+import path from 'path';
 
 // const express = import("express");
 // const cors = import("cors"); // For handling Cross-Origin Resource Sharing
@@ -11,6 +12,7 @@ import axios from 'axios';
 // Initialize the Express application
 const app = express();
 const PORT = process.env.PORT || 8080; // Use port 5000 or an environment variable
+const _dirname = path.resolve();
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes
@@ -439,6 +441,15 @@ app.post("/api/generate_invitation", async (req, res) => {
     });
   }
 });
+
+//make ready for deployment
+if(process.env.NODE_ENV === "production"){
+  app.use(express.static(path.join(_dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(_dirname, "../frontend/dist/index.html"));
+  });
+}
 
 // Start the server
 app.listen(PORT, () => {
