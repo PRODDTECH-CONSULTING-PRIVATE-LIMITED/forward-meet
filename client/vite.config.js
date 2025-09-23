@@ -3,5 +3,4 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/forward-meet/',  // IMPORTANT: must match repo name
 })

@@ -20,7 +20,7 @@ app.use(express.json()); // Enable parsing of JSON request bodies
 
 // --- Configuration (IMPORTANT: Replace with your actual API Keys) ---
 // These keys are for the BACKEND (Geocoding, Places, Directions, and Gemini APIs)
-// Keep these keys secure and do not expose them in your frontend code.
+// Keep these keys secure and do not expose them in your client code.
 const Maps_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
 const GEMINI_API_KEY = ""; // Leave this empty, Canvas will inject the key for Gemini API calls
 
@@ -242,7 +242,7 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
       midpoint,
       placeType,
       searchRadiusMeters
-    ); // Use placeType from frontend
+    ); // Use placeType from client
 
     if (places.length === 0) {
       return res.status(404).json({
@@ -444,10 +444,10 @@ app.post("/api/generate_invitation", async (req, res) => {
 
 //make ready for deployment
 if(process.env.NODE_ENV === "production"){
-  app.use(express.static(path.join(_dirname, "../frontend/dist")));
+  app.use(express.static(path.join(_dirname, "../client/dist")));
 
   app.get("*", (req, res) => {
-    res.sendFile(path.join(_dirname, "../frontend/dist/index.html"));
+    res.sendFile(path.join(_dirname, "../client/dist/index.html"));
   });
 }
 
