@@ -1,5 +1,5 @@
 // Import necessary modules
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
@@ -8,6 +8,9 @@ import path from 'path';
 // const express = import("express");
 // const cors = import("cors"); // For handling Cross-Origin Resource Sharing
 // const axios = import("axios"); // For making HTTP requests to external APIs
+
+// Configure dotenv to load from root directory
+dotenv.config({ path: path.join(path.dirname(new URL(import.meta.url).pathname), '..', '.env') });
 
 // Initialize the Express application
 const app = express();
