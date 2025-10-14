@@ -6,6 +6,8 @@ import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
 import Header from "./components/header/Index";
 import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
+import OptimizeSearch from "./components/OptimiseSearch";
+import PlaceTypeSelector from "./components/PlaceTypeSelection";
 
 // Main App component
 const App = () => {
@@ -885,11 +887,12 @@ const initMap = () => {
                     }
                   }}
                 /> 
+                <OptimizeSearch/>
                 <TrafficPrediction/>
                 </div>
 
                 {/* Place Type Selection */}
-                <div>
+                {/* <div>
                   <label
                     htmlFor="placeType"
                     className="block text-gray-700 text-sm font-semibold mb-2"
@@ -913,10 +916,12 @@ const initMap = () => {
                       💼 Co-working Space
                     </option>
                   </select>
-                </div>
+                </div> */}
+                <PlaceTypeSelector placeType={placeType} setPlaceType={setPlaceType}
+                />
 
                 {/* Search Mode */}
-                <div className="bg-gray-50 p-4 rounded-xl border">
+                {/* <div className="bg-gray-50 p-4 rounded-xl border">
                   <p className="text-gray-700 font-semibold mb-3 text-sm">
                     Optimize search by:
                   </p>
@@ -948,7 +953,7 @@ const initMap = () => {
                       </span>
                     </label>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Traffic Prediction */}
                 {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">

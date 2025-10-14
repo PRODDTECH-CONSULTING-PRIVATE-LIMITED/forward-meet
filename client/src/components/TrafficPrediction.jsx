@@ -14,19 +14,48 @@ const TrafficPrediction = (props) => {
                 value={selectedDateTime ? dayjs(selectedDateTime) : null}
                 onChange={(date, dateString) => setSelectedDateTime(dateString)}
                 placeholder="Select Date and Time"
-                suffixIcon={<CalendarOutlined style={{ color: 'white' }} />}
+                suffixIcon={<CalendarOutlined style={{ color: '#ABABAB', fontSize: '24px' }} />}
                 style={{
-                    width: '229px',
-                    height: '48px',
-                    background: '#8659FF',
-                    border: 'none',
+                    width: '100%',
+                    background: '#FFFFFF',
+                    border: '0.6px solid #C6C6C6',
                     borderRadius: '6px',
-                    color: 'white',
-                    textcolor: 'white',
-                    fontWeight:"bold"
+                    padding: '16px 16px',
                 }}
-                className="text-white font-medium"
+                className="custom-datepicker"
             />
+            <style jsx>{`
+                .custom-datepicker.ant-picker {
+                    height: auto !important;
+                    min-height: 54px !important;
+                }
+                
+                .custom-datepicker .ant-picker-input > input {
+                    font-family: 'DM Sans', sans-serif !important;
+                    font-weight: 500 !important;
+                    font-size: 20px !important;
+                    line-height: 30px !important;
+                    color: '#000000' !important;
+                }
+                
+                .custom-datepicker .ant-picker-input > input::placeholder {
+                    color: #ABABAB !important;
+                    font-family: 'DM Sans', sans-serif !important;
+                    font-weight: 500 !important;
+                    font-size: 20px !important;
+                    line-height: 30px !important;
+                }
+                
+                .custom-datepicker .ant-picker-suffix {
+                    width: 24px;
+                    height: 24px;
+                }
+
+                .custom-datepicker:hover,
+                .custom-datepicker:focus {
+                    border-color: #C6C6C6 !important;
+                }
+            `}</style>
         </div>
     );
 };
