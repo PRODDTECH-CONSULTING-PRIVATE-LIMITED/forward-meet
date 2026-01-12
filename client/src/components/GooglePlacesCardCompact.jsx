@@ -1462,68 +1462,69 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
     travel_distance_from_loc2_km,
   } = locationInfo || {};
 
-  // Fetch Place Photos
+  // Fetch Place Photos using legacy PlacesService
   useEffect(() => {
-    const fetchPlacePhotos = async () => {
-      if (!window.google || !placeId) return;
-      setPhotosLoading(true);
-      try {
-        const { Place } = await window.google.maps.importLibrary("places");
-        const place = new Place({ id: placeId });
-
-        await place.fetchFields({ fields: ["photos"] });
-
-        if (place.photos && place.photos.length > 0) {
+    if (!window.google || !placeId) return;
+    
+    setPhotosLoading(true);
+    
+    // Create a temporary div for PlacesService (required by the API)
+    const tempDiv = document.createElement('div');
+    const service = new window.google.maps.places.PlacesService(tempDiv);
+    
+    service.getDetails(
+      {
+        placeId: placeId,
+        fields: ['photos']
+      },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.photos) {
           const photoData = place.photos.slice(0, 10).map((photo) => ({
-            thumbnail: photo.getURI({ maxHeight: 120, maxWidth: 120 }),
-            fullSize: photo.getURI({ maxHeight: 400, maxWidth: 600 }),
-            attributions: photo.authorAttributions,
+            thumbnail: photo.getUrl({ maxHeight: 120, maxWidth: 120 }),
+            fullSize: photo.getUrl({ maxHeight: 400, maxWidth: 600 }),
           }));
           setPhotoUris(photoData);
         } else {
+          console.log("No photos available or error:", status);
           setPhotoUris([]);
         }
-      } catch (error) {
-        console.error("Error fetching place photos:", error);
-        setPhotoUris([]);
-      } finally {
         setPhotosLoading(false);
       }
-    };
-    fetchPlacePhotos();
+    );
   }, [placeId]);
 
-  // Fetch Place Reviews
+  // Fetch Place Reviews using legacy PlacesService
   useEffect(() => {
-    const fetchPlaceReviews = async () => {
-      if (!window.google || !placeId) return;
-      setReviewsLoading(true);
-      try {
-        const { Place } = await window.google.maps.importLibrary("places");
-        const place = new Place({ id: placeId });
-
-        await place.fetchFields({ fields: ["reviews"] });
-
-      if (place.reviews && place.reviews.length > 0) {
-        const mappedReviews = place.reviews.slice(0, 5).map((r) => ({
+    if (!window.google || !placeId) return;
+    
+    setReviewsLoading(true);
+    
+    // Create a temporary div for PlacesService (required by the API)
+    const tempDiv = document.createElement('div');
+    const service = new window.google.maps.places.PlacesService(tempDiv);
+    
+    service.getDetails(
+      {
+        placeId: placeId,
+        fields: ['reviews']
+      },
+      (place, status) => {
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.reviews && place.reviews.length > 0) {
+          const mappedReviews = place.reviews.slice(0, 5).map((r) => ({
             rating: r.rating,
-            text: r.text.length > 80 ? r.text.slice(0, 80) + "…" : r.text,
-            author: r.authorAttribution?.displayName || "Anonymous",
-            photo: r.authorAttribution?.photoURI || null,
-            profileUrl: r.authorAttribution?.uri || "#",
+            text: r.text && r.text.length > 80 ? r.text.slice(0, 80) + "…" : (r.text || ""),
+            author: r.author_name || "Anonymous",
+            photo: r.profile_photo_url || null,
+            profileUrl: r.author_url || "#",
           }));
           setReviews(mappedReviews);
         } else {
+          console.log("No reviews available or error:", status);
           setReviews([]);
         }
-      } catch (error) {
-        console.error("Error fetching place reviews:", error);
-        setReviews([]);
-      } finally {
         setReviewsLoading(false);
       }
-    };
-    fetchPlaceReviews();
+    );
   }, [placeId]);
 
   // Setup Google Place Card
@@ -1575,335 +1576,435 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
       style={{
         width: "100%",
         maxWidth: 450,
-        borderRadius: "12px",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+        borderRadius: "16px",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
         backgroundColor: "#FFFFFF",
         marginBottom: "1.5rem",
         fontFamily: "'DM Sans', sans-serif",
         color: "#000",
+        transition: "all 0.3s ease",
       }}
-      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      className="cursor-pointer hover:shadow-xl transition-shadow duration-300"
     >
-      {/* Google Place Card*/}
-      <div 
-        onClick={() => setIsDetailedView(false)}
-        style={{
-          backgroundColor: "#FFFFFF",
-          position: "relative",
-        }}
-      >
-        <gmp-place-details
-          ref={ref}
-          truncation-preferred
+      {/* Hero Image with Venue Name Overlay */}
+      {photoUris.length > 0 ? (
+        <div 
           style={{
             width: "100%",
-            display: "block",
-            padding: "0px 16px 0px 16px",
-            marginTop: "-20px",
-            "--gmp-mat-color-surface": "#FFFFFF",
-            "--gmp-mat-color-on-surface": "#474747",
-            "--gmp-mat-color-primary": "#4285F4",
-            "--gmp-mat-color-outline-decorative": "transparent",
-            "--gmp-header-visibility": "none",
-            "--gmp-footer-visibility": "none",
-            fontSize: "14px",
-            cursor: "pointer",
-            backgroundColor: "#FFFFFF",
-            transform: "translateY(-8px)",
-          }}
-        />
-        <style>{`
-          /* Aggressive top spacing removal */
-          gmp-place-details,
-          gmp-place-details *,
-          gmp-place-details > div,
-          gmp-place-details > div:first-child,
-          gmp-place-details [part="root"],
-          gmp-place-details::part(root) {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-          }
-          
-          /* Force container to start at top */
-          gmp-place-details {
-            position: relative !important;
-            top: -8px !important;
-          }
-
-          gmp-place-details {
-            font-family: 'DM Sans', sans-serif !important;
-            background: #FFFFFF !important;
-          }
-          
-          /* Hide any header/banner elements */
-          gmp-place-details::part(header),
-          gmp-place-details [part="header"],
-          gmp-place-details .header {
-            display: none !important;
-            height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          
-          /* Place name styling - H5/SemiBold */
-          gmp-place-details [slot="headline"],
-          gmp-place-details .headline {
-            font-family: 'DM Sans', sans-serif !important;
-            font-weight: 600 !important;
-            font-size: 14px !important;
-            line-height: 21px !important;
-            letter-spacing: 0% !important;
-            color: #474747 !important;
-            max-width: 255px !important;
-            height: 21px !important;
-            margin-bottom: 4px !important;
-          }
-          
-          /* Rating container */
-          gmp-place-details gmp-place-rating {
-            width: 158px !important;
-            height: 21px !important;
-            gap: 12px !important;
-            margin: 4px 0 !important;
-            display: inline-flex !important;
-            align-items: center !important;
-          }
-          
-          /* Place type styling */
-          gmp-place-details gmp-place-type {
-            font-family: 'DM Sans', sans-serif !important;
-            font-weight: 400 !important;
-            font-style: normal !important;
-            font-size: 12px !important;
-            line-height: 15.6px !important;
-            letter-spacing: 0% !important;
-            color: #777777 !important;
-            width: 167px !important;
-            height: 16px !important;
-            gap: 12px !important;
-            display: inline-block !important;
-          }
-          
-          /* Place status (Open now) */
-          gmp-place-details gmp-place-open-now-status {
-            font-family: 'DM Sans', sans-serif !important;
-            font-weight: 400 !important;
-            font-style: normal !important;
-            font-size: 12px !important;
-            line-height: 15.6px !important;
-            letter-spacing: 0% !important;
-            width: 57px !important;
-            height: 16px !important;
-            display: inline-block !important;
-          }
-          
-          /* Place price */
-          gmp-place-details gmp-place-price {
-            font-family: 'DM Sans', sans-serif !important;
-            font-weight: 500 !important;
-            font-style: normal !important;
-            font-size: 12px !important;
-            line-height: 15.6px !important;
-            letter-spacing: 0% !important;
-            width: 65px !important;
-            height: 16px !important;
-            display: inline-block !important;
-          }
-          
-          /* Content container spacing */
-          gmp-place-details .content-container,
-          gmp-place-details [part="content"] {
-            gap: 4px !important;
-            padding: 0 !important;
-            background: #FFFFFF !important;
-          }
-          
-          /* Remove any blue backgrounds */
-          gmp-place-details * {
-            background-color: transparent !important;
-          }
-          
-          gmp-place-details {
-            --gmp-color-surface: #FFFFFF !important;
-            --gmp-color-on-surface: #474747 !important;
-          }
-        `}</style>
-      </div>
-
-      {/* Horizontal Photo Gallery*/}
-      {photoUris.length > 0 && (
-        <div style={{ 
-          backgroundColor: "#FFFFFF",
-          marginTop: "8px"
-        }}>
-          <div
-            className="hide-scrollbar"
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              overflowX: "auto",
-              gap: "8px",
-              padding: "0 16px 8px 16px",
-              scrollBehavior: "smooth",
-            }}
-          >
-            {photoUris.map((photo, index) => (
-              <img
-                key={index}
-                src={photo.thumbnail}
-                alt={`Place photo ${index + 1}`}
-                style={{
-                  minWidth: "100px",
-                  width: "100px",
-                  height: "100px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  border:
-                    selectedPhotoIndex === index
-                      ? "2px solid #4285F4"
-                      : "2px solid transparent",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedPhotoIndex(index);
-                }}
-                onError={(e) => (e.target.style.display = "none")}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Reviews Section */}
-      {reviewsLoading ? (
-        <div
-          style={{
-            padding: "8px 16px",
-            fontSize: "12px",
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: "400",
-            color: "#777777",
-            background: "#FFFFFF",
-            marginTop: "4px",
-          }}
-        >
-          Loading reviews…
-        </div>
-      ) : reviews.length > 0 ? (
-        <div
-          className="hide-scrollbar"
-          style={{
-            backgroundColor: "#FFFFFF",
-            padding: "8px 16px",
-            marginTop: "4px",
-            overflowX: "auto",
-            display: "flex",
-            gap: "8px",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {reviews.map((r, idx) => (
-            <div
-              key={idx}
-              style={{
-                minWidth: "280px",
-                maxWidth: "322px",
-                background: "#F8F9FA",
-                border: "1px solid #E8EAED",
-                borderRadius: "8px",
-                padding: "8px 12px",
-                fontSize: "12px",
-                fontFamily: "'DM Sans', sans-serif",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                minHeight: "32px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-              title={r.text}
-            >
-              {/* Author with profile link */}
-              <div style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: "6px"
-              }}>
-                {r.photo && (
-                  <img
-                    src={r.photo}
-                    alt={r.author}
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "50%",
-                    }}
-                  />
-                )}
-                <a
-                  href={r.profileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ 
-                    fontWeight: "500", 
-                    fontSize: "11px", 
-                    color: "#1a73e8",
-                    fontFamily: "'DM Sans', sans-serif",
-                    textDecoration: "none"
-                  }}
-                >
-                  {r.author}
-                </a>
-              </div>
-              {/* Rating + text */}
-              <div style={{ 
-                fontSize: "11px",
-                lineHeight: "14px",
-                fontFamily: "'DM Sans', sans-serif",
-                color: "#5F6368"
-              }}>
-                <span style={{ color: "#fbbc04", marginRight: "4px" }}>★ {r.rating}</span>
-                {r.text}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {/* Custom Travel Info Panel*/}
-      {locationInfo && (
-        <div
-          className="hide-scrollbar"
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            backgroundColor: "#F8F9FA",
-            padding: "10px 16px",
-            gap: "16px",
-            marginTop: "8px",
-            borderTop: "1px solid #E8EAED",
-            overflowX: "auto",
-            whiteSpace: "nowrap",
-            cursor: "pointer",
+            height: "250px",
+            position: "relative",
+            overflow: "hidden",
+            backgroundColor: "#F5F5F5",
           }}
           onClick={() => setIsDetailedView(false)}
         >
-          <InfoBox
-            label="User 1"
-            time={travel_time_from_loc1_min}
-            distance={travel_distance_from_loc1_km}
+          <img
+            src={photoUris[selectedPhotoIndex]?.fullSize || photoUris[0]?.fullSize}
+            alt="Venue"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
           />
-          <InfoBox
-            label="User 2"
-            time={travel_time_from_loc2_min}
-            distance={travel_distance_from_loc2_km}
-          />
+          
+          {/* Gradient Overlay */}
+          <div style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "100px",
+            background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)",
+          }} />
+          
+          {/* Venue Name on Image - Hidden, will use Google's component */}
+          <div style={{
+            position: "absolute",
+            bottom: "16px",
+            left: "16px",
+            right: "16px",
+            zIndex: 2,
+          }}>
+            <div 
+              ref={ref}
+              style={{
+                color: "#FFFFFF",
+                fontSize: "18px",
+                fontWeight: "600",
+                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                lineHeight: "1.3",
+              }}
+            />
+          </div>
+          
+          {/* Photo counter badge */}
+          {photoUris.length > 1 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                backgroundColor: "rgba(0, 0, 0, 0.75)",
+                color: "#FFFFFF",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: "600",
+                fontFamily: "'DM Sans', sans-serif",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              {selectedPhotoIndex + 1} / {photoUris.length}
+            </div>
+          )}
+        </div>
+      ) : photosLoading ? (
+        <div
+          style={{
+            width: "100%",
+            height: "250px",
+            backgroundColor: "#F5F5F5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "13px",
+            color: "#999",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Loading image...
+        </div>
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            height: "180px",
+            backgroundColor: "#F5F5F5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "13px",
+            color: "#999",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          No image available
         </div>
       )}
 
+      {/* Card Content */}
+      <div style={{ padding: "20px" }}>
+        {/* Venue Name (from Google component - positioned absolutely on image) */}
+        <div style={{ display: "none" }}>
+          <gmp-place-details
+            ref={ref}
+            truncation-preferred
+            style={{
+              width: "100%",
+              display: "block",
+            }}
+          />
+        </div>
+
+        {/* Rating, Type, Price, Status Row */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "16px",
+        }}>
+          {/* We'll use a custom layout but keep Google's component hidden for data */}
+          <div 
+            onClick={() => setIsDetailedView(false)}
+            style={{
+              width: "100%",
+            }}
+          >
+            <gmp-place-details
+              truncation-preferred
+              style={{
+                width: "100%",
+                display: "block",
+                "--gmp-mat-color-surface": "#FFFFFF",
+                "--gmp-mat-color-on-surface": "#474747",
+                "--gmp-mat-color-primary": "#4285F4",
+                "--gmp-header-visibility": "none",
+                "--gmp-footer-visibility": "none",
+                fontSize: "14px",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Travel Time Cards */}
+        {locationInfo && (
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              marginBottom: "16px",
+            }}
+          >
+            <div
+              onClick={() => setIsDetailedView(false)}
+              style={{
+                flex: 1,
+                backgroundColor: "#E3F2FD",
+                borderRadius: "12px",
+                padding: "12px 14px",
+                border: "1px solid #BBDEFB",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#BBDEFB";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#E3F2FD";
+              }}
+            >
+              <div style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                color: "#1976D2",
+                marginBottom: "4px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}>
+                User 1
+              </div>
+              <div style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                color: "#0D47A1",
+              }}>
+                {travel_time_from_loc1_min ? `${travel_time_from_loc1_min} min` : "N/A"}
+              </div>
+              <div style={{
+                fontSize: "11px",
+                color: "#1976D2",
+                marginTop: "2px",
+              }}>
+                {travel_distance_from_loc1_km !== undefined ? `${travel_distance_from_loc1_km} km` : ""}
+              </div>
+            </div>
+
+            <div
+              onClick={() => setIsDetailedView(false)}
+              style={{
+                flex: 1,
+                backgroundColor: "#F3E5F5",
+                borderRadius: "12px",
+                padding: "12px 14px",
+                border: "1px solid #E1BEE7",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#E1BEE7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#F3E5F5";
+              }}
+            >
+              <div style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                color: "#7B1FA2",
+                marginBottom: "4px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}>
+                User 2
+              </div>
+              <div style={{
+                fontSize: "14px",
+                fontWeight: "600",
+                color: "#4A148C",
+              }}>
+                {travel_time_from_loc2_min ? `${travel_time_from_loc2_min} min` : "N/A"}
+              </div>
+              <div style={{
+                fontSize: "11px",
+                color: "#7B1FA2",
+                marginTop: "2px",
+              }}>
+                {travel_distance_from_loc2_km !== undefined ? `${travel_distance_from_loc2_km} km` : ""}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Gallery Thumbnails */}
+        {photoUris.length > 1 && (
+          <div style={{ marginBottom: "12px" }}>
+            <div
+              className="hide-scrollbar"
+              style={{
+                display: "flex",
+                gap: "8px",
+                overflowX: "auto",
+                scrollBehavior: "smooth",
+                paddingBottom: "4px",
+              }}
+            >
+              {photoUris.map((photo, index) => (
+                <img
+                  key={index}
+                  src={photo.thumbnail}
+                  alt={`Photo ${index + 1}`}
+                  style={{
+                    minWidth: "70px",
+                    width: "70px",
+                    height: "70px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    border: selectedPhotoIndex === index
+                      ? "3px solid #4285F4"
+                      : "3px solid transparent",
+                    transition: "all 0.2s ease",
+                    opacity: selectedPhotoIndex === index ? 1 : 0.7,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedPhotoIndex(index);
+                  }}
+                  onError={(e) => (e.target.style.display = "none")}
+                  onMouseEnter={(e) => {
+                    if (selectedPhotoIndex !== index) {
+                      e.currentTarget.style.opacity = "1";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedPhotoIndex !== index) {
+                      e.currentTarget.style.opacity = "0.7";
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Reviews Section */}
+        {reviewsLoading ? (
+          <div
+            style={{
+              padding: "12px",
+              fontSize: "12px",
+              fontFamily: "'DM Sans', sans-serif",
+              color: "#999",
+              textAlign: "center",
+              backgroundColor: "#F8F9FA",
+              borderRadius: "8px",
+            }}
+          >
+            Loading reviews...
+          </div>
+        ) : reviews.length > 0 ? (
+          <div style={{ marginTop: "8px" }}>
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: "600",
+                color: "#5F6368",
+                marginBottom: "8px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Recent Reviews
+            </div>
+            <div
+              className="hide-scrollbar"
+              style={{
+                display: "flex",
+                gap: "10px",
+                overflowX: "auto",
+                paddingBottom: "4px",
+              }}
+            >
+              {reviews.map((r, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    minWidth: "260px",
+                    maxWidth: "300px",
+                    background: "#F8F9FA",
+                    border: "1px solid #E8EAED",
+                    borderRadius: "10px",
+                    padding: "12px",
+                    fontSize: "12px",
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                  title={r.text}
+                >
+                  <div style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "8px",
+                    marginBottom: "6px",
+                  }}>
+                    {r.photo && (
+                      <img
+                        src={r.photo}
+                        alt={r.author}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    )}
+                    <a
+                      href={r.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ 
+                        fontWeight: "600", 
+                        fontSize: "12px", 
+                        color: "#1a73e8",
+                        textDecoration: "none",
+                        flex: 1,
+                      }}
+                    >
+                      {r.author}
+                    </a>
+                    <span style={{ 
+                      color: "#FBBC04", 
+                      fontSize: "13px",
+                      fontWeight: "600",
+                    }}>
+                      ★ {r.rating}
+                    </span>
+                  </div>
+                  <div style={{ 
+                    fontSize: "11px",
+                    lineHeight: "16px",
+                    color: "#5F6368",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}>
+                    {r.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Styles */}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
@@ -1911,6 +2012,42 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        
+        /* Hide Google Place Details component but extract venue name */
+        gmp-place-details {
+          font-family: 'DM Sans', sans-serif !important;
+        }
+        
+        gmp-place-details [slot="headline"] {
+          font-family: 'DM Sans', sans-serif !important;
+          font-weight: 600 !important;
+          font-size: 16px !important;
+          line-height: 22px !important;
+          color: #202124 !important;
+        }
+        
+        gmp-place-details gmp-place-rating {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+        }
+        
+        gmp-place-details gmp-place-type {
+          font-family: 'DM Sans', sans-serif !important;
+          font-size: 13px !important;
+          color: #5F6368 !important;
+        }
+        
+        gmp-place-details gmp-place-open-now-status {
+          font-family: 'DM Sans', sans-serif !important;
+          font-size: 12px !important;
+        }
+        
+        gmp-place-details gmp-place-price {
+          font-family: 'DM Sans', sans-serif !important;
+          font-size: 13px !important;
+          font-weight: 500 !important;
         }
       `}</style>
     </div>

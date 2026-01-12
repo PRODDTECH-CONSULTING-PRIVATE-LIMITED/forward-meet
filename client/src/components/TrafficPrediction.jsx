@@ -3,29 +3,29 @@ import dayjs from "dayjs";
 import { CalendarOutlined } from '@ant-design/icons';
 
 const TrafficPrediction = (props) => {
-    const { selectedDateTime, setSelectedDateTime } = props;
+    const { selectedDate, setSelectedDate } = props;
 
     return (
-        <div className="">
+        <div className="w-full">
             <DatePicker
                 id="trafficDateTime"
                 showTime={{ format: "HH:mm" }}
                 format="YYYY-MM-DD HH:mm"
-                value={selectedDateTime ? dayjs(selectedDateTime) : null}
-                onChange={(date, dateString) => setSelectedDateTime(dateString)}
+                value={selectedDate ? dayjs(selectedDate) : null}
+                onChange={(date, dateString) => setSelectedDate(dateString)}
                 placeholder="Select Date and Time"
-                suffixIcon={<CalendarOutlined style={{ color: 'white' }} />}
+                suffixIcon={<CalendarOutlined style={{ color: '#6366f1' }} />}
                 style={{
-                    width: '229px',
-                    height: '48px',
-                    background: '#8659FF',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: 'white',
-                    textcolor: 'white',
-                    fontWeight:"bold"
+                    width: '100%',
+                    height: '52px',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '16px',
+                    color: '#1e293b',
+                    fontWeight: "bold",
+                    padding: '0 16px'
                 }}
-                className="text-white font-medium"
+                className="hover:border-indigo-500 focus:border-indigo-500 transition-all duration-200"
             />
         </div>
     );

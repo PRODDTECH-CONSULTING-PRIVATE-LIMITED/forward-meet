@@ -8,7 +8,7 @@ import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
 
 // Main App component
-const App = () => {
+const App = (props) => {
   // ALL HOOKS AT THE TOP - NEVER AFTER CONDITIONAL RETURNS
   // State variables for input locations, search results, loading status, and errors
   const [showFilters, setShowFilters] = useState(true);
@@ -608,8 +608,8 @@ const initMap = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            location1,
-            location2,
+            location1: location1InputRef.current?.value || location1,
+            location2: location2InputRef.current?.value || location2,
             searchMode,
             searchRadius,
             travelMode: currentTravelMode,
@@ -876,6 +876,7 @@ const initMap = () => {
                   setLocation2={setLocation2}
                   location1InputRef={location1InputRef}
                   location2InputRef={location2InputRef}
+                  userLocation={userLocation}
                   onInputsVisible={() => {
                     // Re-initialize autocomplete when inputs become visible
                     if (userLocation) {
@@ -885,154 +886,118 @@ const initMap = () => {
                     }
                   }}
                 /> 
-                <TrafficPrediction/>
+                <TrafficPrediction {...props} setSelectedDate={setSelectedDate} selectedDate={selectedDate}/>
                 </div>
 
                 {/* Place Type Selection */}
-                <div>
+                <div className="space-y-2">
                   <label
                     htmlFor="placeType"
-                    className="block text-gray-700 text-sm font-semibold mb-2"
+                    className="block text-slate-700 text-sm font-bold ml-1"
                   >
-                    <span className="flex items-center">
-                      What type of place?
-                    </span>
+                    What type of place?
                   </label>
-                  <select
-                    id="placeType"
-                    value={placeType}
-                    onChange={(e) => setPlaceType(e.target.value)}
-                    className="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent focus:bg-white transition-all duration-200 text-gray-700 font-medium"
-                  >
-                    <option value="restaurant">🍽️ Restaurant</option>
-                    <option value="cafe">☕ Coffee Shop</option>
-                    <option value="bar">🍺 Bar</option>
-                    <option value="night_club">🎵 Night Club</option>
-                    <option value="establishment">🏢 Any Establishment</option>
-                    <option value="co_working_space">
-                      💼 Co-working Space
-                    </option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="placeType"
+                      value={placeType}
+                      onChange={(e) => setPlaceType(e.target.value)}
+                      className="w-full appearance-none py-3.5 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-slate-700 font-bold"
+                    >
+                      <option value="restaurant">🍽️ Restaurant</option>
+                      <option value="cafe">☕ Coffee Shop</option>
+                      <option value="bar">🍺 Bar</option>
+                      <option value="night_club">🎵 Night Club</option>
+                      <option value="establishment">🏢 Any Establishment</option>
+                      <option value="co_working_space">💼 Co-working Space</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Search Mode */}
-                <div className="bg-gray-50 p-4 rounded-xl border">
-                  <p className="text-gray-700 font-semibold mb-3 text-sm">
+                {/* Search Mode - Segmented Control */}
+                <div className="space-y-2">
+                  <p className="text-slate-700 font-bold text-sm ml-1">
                     Optimize search by:
                   </p>
-                  <div className="flex gap-6">
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        className="form-radio h-4 w-4 text-blue-600"
-                        name="searchMode"
-                        value="time"
-                        checked={searchMode === "time"}
-                        onChange={(e) => setSearchMode(e.target.value)}
-                      />
-                      <span className="ml-2 text-gray-700 text-sm font-medium">
-                        ⏱️ Time
-                      </span>
-                    </label>
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        className="form-radio h-4 w-4 text-purple-600"
-                        name="searchMode"
-                        value="distance"
-                        checked={searchMode === "distance"}
-                        onChange={(e) => setSearchMode(e.target.value)}
-                      />
-                      <span className="ml-2 text-gray-700 text-sm font-medium">
-                        📏 Distance
-                      </span>
-                    </label>
+                  <div className="flex p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setSearchMode("time")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all duration-200 ${
+                        searchMode === "time"
+                          ? "bg-white text-indigo-600 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      <span className="text-lg">⏱️</span>
+                      <span className="text-sm">Time</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSearchMode("distance")}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all duration-200 ${
+                        searchMode === "distance"
+                          ? "bg-white text-indigo-600 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      <span className="text-lg">📏</span>
+                      <span className="text-sm">Distance</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Traffic Prediction */}
-                {/* <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                  <p className="text-gray-700 font-semibold mb-3 text-sm">
-                    ⏰ Traffic Prediction (Driving Only)
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label
-                        htmlFor="selectedDate"
-                        className="block text-gray-600 text-xs font-semibold mb-1"
-                      >
-                        Date:
-                      </label>
-                      <input
-                        type="date"
-                        id="selectedDate"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="selectedTime"
-                        className="block text-gray-600 text-xs font-semibold mb-1"
-                      >
-                        Time:
-                      </label>
-                      <input
-                        type="time"
-                        id="selectedTime"
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        className="w-full py-2 px-3 text-gray-700 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div> */}
-                {/* <TrafficPrediction/> */}
-
                 {/* Search Radius */}
-                <div>
-                  <label
-                    htmlFor="searchRadius"
-                    className="block text-gray-700 text-sm font-semibold mb-3"
-                  >
-                    <span className="flex items-center justify-between">
-                      <span>🎯 Search Radius</span>
-                      <span className="text-green-600 font-bold">
-                        {searchRadius} km
-                      </span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <label
+                      htmlFor="searchRadius"
+                      className="text-slate-700 text-sm font-bold"
+                    >
+                      🎯 Search Radius
+                    </label>
+                    <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold border border-indigo-100">
+                      {searchRadius} km
                     </span>
-                  </label>
-                  <input
-                    type="range"
-                    id="searchRadius"
-                    min="1"
-                    max="50"
-                    value={searchRadius}
-                    onChange={(e) => setSearchRadius(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gradient-to-r from-green-200 to-green-400 rounded-lg appearance-none cursor-pointer"
-                    style={{
-                      background: `linear-gradient(to right, #10b981 0%, #10b981 ${
-                        (searchRadius / 50) * 100
-                      }%, #e5e7eb ${(searchRadius / 50) * 100}%, #e5e7eb 100%)`,
-                    }}
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>1km</span>
-                    <span>50km</span>
+                  </div>
+                  <div className="px-1">
+                    <input
+                      type="range"
+                      id="searchRadius"
+                      min="1"
+                      max="50"
+                      value={searchRadius}
+                      onChange={(e) => setSearchRadius(parseInt(e.target.value))}
+                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      style={{
+                        background: `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${
+                          (searchRadius / 50) * 100
+                        }%, #e2e8f0 ${(searchRadius / 50) * 100}%, #e2e8f0 100%)`,
+                      }}
+                    />
+                    <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-2 px-0.5">
+                      <span>1km</span>
+                      <span>50km</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Search Button */}
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ease-in-out transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
+                  className="w-full mt-4 bg-gradient-to-br from-indigo-600 to-violet-700 hover:from-indigo-700 hover:to-violet-800 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 overflow-hidden group relative"
                   disabled={loading}
                 >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                   {loading ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        className="animate-spin h-5 w-5 text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -1051,12 +1016,12 @@ const initMap = () => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Searching...</span>
+                      <span className="relative z-10">Searching...</span>
                     </>
                   ) : (
                     <>
                       <svg
-                        className="w-5 h-5"
+                        className="w-5 h-5 relative z-10"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1064,11 +1029,11 @@ const initMap = () => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth={2.5}
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                       </svg>
-                      <span>Find Midway Places</span>
+                      <span className="relative z-10">Find Midway Places</span>
                     </>
                   )}
                 </button>

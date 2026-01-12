@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forward Meet: Interactive Project Proposal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a top-to-bottom narrative scroll, guiding the user through the project's story. It starts with a hero section to define the product, followed by an interactive visualization of "The Problem". The core is "The Solution," an interactive demo simulating the app's workflow, using a Chart.js chart to visually compare travel times. This is followed by a "Key Features" section using an interactive grid, and a "Future Roadmap" timeline. This thematic, linear structure is more engaging than a static report and allows users to understand the project's value proposition step-by-step, culminating in a clear call to action. -->
+    <!-- Visualization & Content Choices: 
+        - The Problem: Goal is to compare unfair vs. fair meeting points. A side-by-side visual layout with simple HTML/CSS animations is used to illustrate the disparity in travel times, which is more intuitive than text alone.
+        - The Solution (Demo): Goal is to showcase the app's core function. An interactive, multi-step demo is used. Report Info (Venue suggestions with travel times) -> Viz/Method (A horizontal bar chart via Chart.js) -> Interaction (User clicks through steps) -> Justification (The bar chart provides an immediate, clear visual comparison of travel time equity, which is the core value proposition).
+        - Key Features: Goal is to present features concisely. An interactive icon grid is used. Clicking an icon reveals details, saving space and encouraging user engagement.
+        - Future Roadmap: Goal is to show project evolution. A clickable HTML/CSS timeline is used to present phased development in a clear, chronological, and interactive manner.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .bg-primary { background-color: #FDFBF8; }
+        .bg-secondary { background-color: #F5F0E8; }
+        .bg-accent { background-color: #4A90E2; }
+        .text-accent { color: #4A90E2; }
+        .border-accent { border-color: #4A90E2; }
+        .shadow-custom { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02); }
+        .step-button.active { background-color: #4A90E2; color: white; }
+        .feature-card, .timeline-item { transition: all 0.3s ease-in-out; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1); }
+        .timeline-item.active { border-left-color: #4A90E2; }
+    </style>
+</head>
+<body class="bg-primary">
+
+    <header class="text-center p-8 md:p-12 border-b border-gray-200">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800">Forward Meet</h1>
+        <p class="mt-2 text-lg md:text-xl text-gray-600">Planning Meetings, Not Commutes.</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="problem" class="my-16 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">The Challenge of Meeting in the Middle</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-12">Current mapping tools find the geographic middle, but ignore the most important factor: your time. This often leads to one person traveling much longer than the other, especially when planning for future traffic.</p>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-200">
+                    <h3 class="text-xl font-semibold text-red-500 mb-4">The "Fair" Midpoint Fallacy</h3>
+                    <div class="relative w-full h-64 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
+                        <span class="absolute top-4 left-4">👤 User A</span>
+                        <span class="absolute bottom-4 right-4">👤 User B</span>
+                        <div class="w-2 h-2 bg-red-500 rounded-full absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                        <p class="mt-16">Geographic Center</p>
+                    </div>
+                    <p class="mt-4 text-gray-600">A simple midpoint calculation ignores roads and traffic, resulting in unequal travel times.</p>
+                    <div class="mt-4 p-4 bg-red-50 rounded-md text-left">
+                        <p><strong>Travel Time:</strong></p>
+                        <p>👤 User A: <span class="font-bold text-red-600">55 min</span></p>
+                        <p>👤 User B: <span class="font-bold">25 min</span></p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-custom border-2 border-accent">
+                    <h3 class="text-xl font-semibold text-accent mb-4">The Forward Meet Solution</h3>
+                    <div class="relative w-full h-64 bg-gray-100 rounded-md flex items-center justify-center text-sm text-gray-500">
+                        <span class="absolute top-4 left-4">👤 User A</span>
+                        <span class="absolute bottom-4 right-4">👤 User B</span>
+                        <div class="w-2 h-2 bg-accent rounded-full absolute" style="top: 60%; left: 40%; transform: translate(-50%, -50%);"></div>
+                        <p class="mt-24">Time-Equitable Center</p>
+                    </div>
+                    <p class="mt-4 text-gray-600">Our algorithm finds a point where future travel times are balanced for everyone.</p>
+                    <div class="mt-4 p-4 bg-blue-50 rounded-md text-left">
+                        <p><strong>Travel Time:</strong></p>
+                        <p>👤 User A: <span class="font-bold text-green-600">40 min</span></p>
+                        <p>👤 User B: <span class="font-bold text-green-600">42 min</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="my-16 bg-secondary p-8 rounded-lg">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-2">Our Solution in Action</h2>
+            <p class="text-lg text-gray-600 text-center mb-8">Experience a simplified version of the Forward Meet planning process.</p>
+            <div class="flex justify-center mb-8 space-x-2">
+                <button id="step1-btn" class="step-button px-4 py-2 rounded-md font-semibold transition active">Step 1: Inputs</button>
+                <button id="step2-btn" class="step-button px-4 py-2 rounded-md font-semibold transition">Step 2: Analysis</button>
+                <button id="step3-btn" class="step-button px-4 py-2 rounded-md font-semibold transition">Step 3: Results</button>
+            </div>
+
+            <div id="demo-content" class="grid lg:grid-cols-2 gap-8 items-start">
+                <div id="step1-content" class="space-y-4">
+                    <h3 class="text-2xl font-semibold text-gray-700">Plan Your Meeting</h3>
+                    <div>
+                        <label class="font-medium">User 1 Location</label>
+                        <input type="text" value="Jayanagar, Bengaluru" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="font-medium">User 2 Location</label>
+                        <input type="text" value="Indiranagar, Bengaluru" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="font-medium">Date & Time</label>
+                        <input type="text" value="Tomorrow, 7:00 PM" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="font-medium">Venue Type</label>
+                        <input type="text" value="Restaurant" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                    </div>
+                     <div>
+                        <label class="font-medium">Search Radius</label>
+                        <input type="text" value="5 km from midpoint" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                    </div>
+                </div>
+
+                <div id="step2-content" class="hidden flex flex-col items-center justify-center h-full text-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-accent mb-4"></div>
+                    <h3 class="text-2xl font-semibold text-gray-700">Calculating...</h3>
+                    <p class="text-gray-600">Analyzing predictive traffic data to find the most time-equitable meeting point and nearby venues.</p>
+                </div>
+
+                <div id="step3-content" class="hidden">
+                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Venue Suggestions</h3>
+                     <div id="venue-list" class="space-y-3"></div>
+                </div>
+                
+                <div id="chart-container-wrapper" class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 hidden">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Travel Time Comparison</h3>
+                    <div class="chart-container relative mx-auto" style="height:40vh; max-height: 400px; max-width: 600px;">
+                        <canvas id="travelTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="my-16">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Core Features</h2>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="feature-card bg-white p-6 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">📍</div>
+                    <h3 class="text-xl font-semibold mb-2">Intelligent Midpoint</h3>
+                    <p class="text-gray-600">Calculates a midpoint based on predictive travel time, not just distance.</p>
+                </div>
+                <div class="feature-card bg-white p-6 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">🍽️</div>
+                    <h3 class="text-xl font-semibold mb-2">Venue Suggestions</h3>
+                    <p class="text-gray-600">Finds relevant venues around the time-equitable midpoint.</p>
+                </div>
+                <div class="feature-card bg-white p-6 rounded-lg shadow-custom border border-gray-200 text-center">
+                     <div class="text-4xl mb-4">🚗</div>
+                    <h3 class="text-xl font-semibold mb-2">Integrated Booking</h3>
+                    <p class="text-gray-600">Book a cab or reserve a table directly from the app.</p>
+                </div>
+                <div class="feature-card bg-white p-6 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-4xl mb-4">📅</div>
+                    <h3 class="text-xl font-semibold mb-2">Calendar Sync</h3>
+                    <p class="text-gray-600">Add meeting details to your personal calendar with one tap.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="my-16">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Future Roadmap</h2>
+            <div class="flex flex-col md:flex-row justify-center">
+                <div class="w-full md:w-1/3">
+                    <div id="timeline-phase1" class="timeline-item p-4 border-l-4 border-gray-300 cursor-pointer active">
+                        <h3 class="text-xl font-semibold">Phase 1: Group Polling</h3>
+                        <p class="text-gray-600">Allow participants to vote on their favorite venue from a curated list.</p>
+                    </div>
+                    <div id="timeline-phase2" class="timeline-item p-4 border-l-4 border-gray-300 cursor-pointer">
+                        <h3 class="text-xl font-semibold">Phase 2: Multi-Modal Transport</h3>
+                        <p class="text-gray-600">Include travel time for public transit, walking, and cycling.</p>
+                    </div>
+                    <div id="timeline-phase3" class="timeline-item p-4 border-l-4 border-gray-300 cursor-pointer">
+                        <h3 class="text-xl font-semibold">Phase 3: AI Personalization</h3>
+                        <p class="text-gray-600">Use machine learning to suggest venues based on user preferences.</p>
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 mt-8 md:mt-0 md:pl-8 flex items-center justify-center bg-secondary rounded-lg min-h-[200px]">
+                    <p id="timeline-details" class="text-lg text-center p-8 text-gray-700 font-medium"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white text-center p-8 mt-16">
+        <h2 class="text-2xl font-bold">Ready to Move Forward?</h2>
+        <p class="mt-2 mb-6 max-w-xl mx-auto">Let's discuss how Forward Meet can redefine meeting logistics for your users.</p>
+        <div class="flex justify-center space-x-4">
+            <a href="#" class="bg-accent text-white font-semibold px-6 py-3 rounded-md hover:bg-blue-600 transition">Request a Demo</a>
+            <a href="#" class="bg-gray-200 text-gray-800 font-semibold px-6 py-3 rounded-md hover:bg-gray-300 transition">Discuss Investment</a>
+        </div>
+        <p class="mt-8 text-sm text-gray-400">&copy; 2025 Forward Meet. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const step1Btn = document.getElementById('step1-btn');
+            const step2Btn = document.getElementById('step2-btn');
+            const step3Btn = document.getElementById('step3-btn');
+            const stepButtons = [step1Btn, step2Btn, step3Btn];
+
+            const step1Content = document.getElementById('step1-content');
+            const step2Content = document.getElementById('step2-content');
+            const step3Content = document.getElementById('step3-content');
+            const chartWrapper = document.getElementById('chart-container-wrapper');
+            const contentPanels = [step1Content, step2Content, step3Content];
+            
+            let chartInstance = null;
+            const venueData = [
+                { name: 'Toit', userA: 28, userB: 37, rating: 4.5 },
+                { name: 'Barbeque Nation', userA: 42, userB: 32, rating: 4.2 },
+                { name: 'Hotel Ambient', userA: 31, userB: 42, rating: 3.9 },
+                { name: 'The Black Pearl', userA: 38, userB: 39, rating: 4.4 }
+            ];
+
+            function switchStep(step) {
+                stepButtons.forEach((btn, index) => {
+                    btn.classList.toggle('active', index + 1 === step);
+                });
+                contentPanels.forEach((panel, index) => {
+                    panel.classList.toggle('hidden', index + 1 !== step);
+                });
+                
+                chartWrapper.classList.add('hidden');
+                if (step === 3) {
+                    chartWrapper.classList.remove('hidden');
+                    renderResults();
+                }
+            }
+
+            function renderResults() {
+                const venueList = document.getElementById('venue-list');
+                venueList.innerHTML = '';
+                venueData.forEach(venue => {
+                    const venueEl = document.createElement('div');
+                    venueEl.className = 'bg-white p-4 rounded-lg shadow-sm border border-gray-200';
+                    venueEl.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-lg text-gray-800">${venue.name}</h4>
+                            <span class="text-sm font-semibold bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full">${venue.rating} ★</span>
+                        </div>
+                        <div class="flex justify-around mt-2 text-sm text-gray-600">
+                            <p>👤 User A: <span class="font-semibold">${venue.userA} min</span></p>
+                            <p>👤 User B: <span class="font-semibold">${venue.userB} min</span></p>
+                        </div>
+                    `;
+                    venueList.appendChild(venueEl);
+                });
+                renderChart();
+            }
+
+            function renderChart() {
+                const ctx = document.getElementById('travelTimeChart').getContext('2d');
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: venueData.map(v => v.name.length > 16 ? v.name.substring(0, 15) + '...' : v.name),
+                        datasets: [
+                            {
+                                label: 'User A Travel Time (min)',
+                                data: venueData.map(v => v.userA),
+                                backgroundColor: 'rgba(74, 144, 226, 0.6)',
+                                borderColor: 'rgba(74, 144, 226, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'User B Travel Time (min)',
+                                data: venueData.map(v => v.userB),
+                                backgroundColor: 'rgba(80, 227, 194, 0.6)',
+                                borderColor: 'rgba(80, 227, 194, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Travel Time (minutes)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return venueData[context[0].dataIndex].name;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            step1Btn.addEventListener('click', () => switchStep(1));
+            step2Btn.addEventListener('click', () => {
+                switchStep(2);
+                setTimeout(() => switchStep(3), 2000);
+            });
+            step3Btn.addEventListener('click', () => switchStep(3));
+            
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            const timelineDetails = document.getElementById('timeline-details');
+            const timelineContent = {
+                'timeline-phase1': 'Enable users to share a shortlist of venues with participants, who can then vote for their preferred option directly within the app. This fosters collaboration and ensures everyone is happy with the final choice.',
+                'timeline-phase2': 'Expand beyond driving to include travel time calculations for public transit, walking, and cycling. Users can select their preferred mode of transport for more accurate and personalized planning.',
+                'timeline-phase3': 'Implement a machine learning model to learn from user preferences, past bookings, and ratings. This will enable the app to provide highly personalized and intelligent venue suggestions over time.'
+            };
+
+            function updateTimeline(activeId) {
+                timelineItems.forEach(item => {
+                    item.classList.toggle('active', item.id === activeId);
+                });
+                timelineDetails.textContent = timelineContent[activeId];
+            }
+
+            timelineItems.forEach(item => {
+                item.addEventListener('click', () => updateTimeline(item.id));
+            });
+            
+            updateTimeline('timeline-phase1');
+        });
+    </script>
+</body>
+</html>
