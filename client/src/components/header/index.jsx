@@ -28,7 +28,7 @@ const Header = () => {
         Midway Place Finder
       </h1>
       <p className="text-slate-500 text-base font-medium leading-relaxed max-w-[280px] mx-auto">
-        Find the perfect meeting spot between two locations
+         The perfect meeting spot between two locations
       </p>
     </div>
   );
