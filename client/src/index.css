@@ -67,6 +67,7 @@
 }
 
 .participant-card input {
+  width: 100% !important;
   background: transparent !important;
   border: none !important;
   outline: none !important;

@@ -19,16 +19,16 @@ const ParticipantCard = ({
     <div 
       className={`participant-card ${value ? 'filled' : ''}`}
       onClick={handleCardClick}
-      style={{ cursor: 'text' }}
+      style={{ cursor: 'text', position: 'relative' }}
     >
-      <div className="flex items-center gap-3">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div className={`participant-avatar ${avatarClass}`}>
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
           </svg>
         </div>
-        <div className="flex-1">
-          <label className="text-xs font-medium text-slate-600 block mb-1">
+        <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+          <label className="text-xs font-medium text-slate-600 block mb-1" style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748b', display: 'block', marginBottom: '0.25rem' }}>
             {label}
           </label>
           <input
@@ -37,7 +37,17 @@ const ParticipantCard = ({
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            className="w-full border-none outline-none text-sm text-slate-800 bg-transparent"
+            style={{ 
+              width: '100%',
+              border: 'none',
+              outline: 'none',
+              fontSize: '0.875rem',
+              color: '#1e293b',
+              background: 'transparent',
+              position: 'relative',
+              zIndex: 1,
+              padding: 0
+            }}
           />
         </div>
         {value && (
@@ -46,10 +56,12 @@ const ParticipantCard = ({
               e.stopPropagation();
               onClear();
             }}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
+            style={{ color: '#94a3b8', transition: 'color 0.2s', zIndex: 2 }}
             type="button"
+            onMouseEnter={(e) => e.currentTarget.style.color = '#475569'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg style={{ width: '1rem', height: '1rem' }} fill="currentColor" viewBox="0 0 20 20">
               <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
             </svg>
           </button>

@@ -29,6 +29,56 @@ const LocationSelector = ({
     return () => clearTimeout(timer);
   }, []);
 
+  // Sync autocomplete dropdown width with participant card width
+  useEffect(() => {
+    const syncDropdownWidth = () => {
+      const pacContainers = document.querySelectorAll('.pac-container');
+      const participantCards = document.querySelectorAll('.participant-card');
+      
+      if (pacContainers.length > 0 && participantCards.length > 0) {
+        pacContainers.forEach(container => {
+          // Get the width of the first participant card
+          const card = participantCards[0];
+          const cardWidth = card.offsetWidth;
+          
+          // Only set width, let Google Maps handle positioning
+          container.style.width = `${cardWidth}px`;
+        });
+      }
+    };
+
+    // Create a MutationObserver to watch for the autocomplete dropdown being added
+    const observer = new MutationObserver((mutations) => {
+      // Only sync when .pac-container is actually added (not on every DOM change)
+      const pacAdded = mutations.some(mutation => 
+        Array.from(mutation.addedNodes).some(node => 
+          node.classList && node.classList.contains('pac-container')
+        )
+      );
+      
+      if (pacAdded) {
+        syncDropdownWidth();
+      }
+    });
+
+    // Only observe direct children of body (not subtree) to reduce triggers
+    observer.observe(document.body, {
+      childList: true,
+      subtree: false
+    });
+
+    // Sync on window resize
+    window.addEventListener('resize', syncDropdownWidth);
+
+    // Initial sync
+    syncDropdownWidth();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncDropdownWidth);
+    };
+  }, []);
+
   // Initialize Google Places Autocomplete
   const initAutocomplete = () => {
     if (window.google?.maps?.places) {
