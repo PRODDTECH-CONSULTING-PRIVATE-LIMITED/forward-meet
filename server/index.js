@@ -145,7 +145,7 @@ async function getPlaceDetails(placeId) {
   // Also include business_status, price_level, reviews for a complete card.
   // New: Added 'serves_vegetarian_food', 'serves_vegan_food', 'serves_gluten_free_food'
   const fields =
-    "name,formatted_address,geometry,rating,user_ratings_total,photos,url,website,formatted_phone_number,opening_hours,business_status,price_level,serves_vegetarian_food";
+    "name,formatted_address,geometry,rating,user_ratings_total,photos,url,website,formatted_phone_number,opening_hours,business_status,price_level,serves_vegetarian_food,reviews";
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${Maps_API_KEY}`;
 
   try {
@@ -175,6 +175,7 @@ async function getPlaceDetails(placeId) {
         serves_vegetarian_food: details.serves_vegetarian_food || false,
         serves_vegan_food: details.serves_vegan_food || false,
         serves_gluten_free_food: details.serves_gluten_free_food || false,
+        reviews: details.reviews || [],
       };
     } else {
       console.error(

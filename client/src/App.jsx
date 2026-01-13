@@ -11,6 +11,7 @@ import VenueTypeSelector from "./components/VenueTypeSelector";
 import SegmentedControl from "./components/SegmentedControl";
 import SearchRadiusSlider from "./components/SearchRadiusSlider";
 import TravelModeSelector from "./components/TravelModeSelector";
+import VenueResultsSidebar from "./components/VenueResultsSidebar";
 
 // Main App component
 const App = (props) => {
@@ -65,6 +66,10 @@ const App = (props) => {
   const [mapsLoaded, setMapsLoaded] = useState(false);
   const [isDetailedView, setIsDetailedView] = useState(false);
   const [detailedPlaceId, setDetailedPlaceId] = useState(null);
+
+  // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [hoveredVenueId, setHoveredVenueId] = useState(null);
 
   // Check for library loading
   useEffect(() => {
@@ -1309,6 +1314,22 @@ const initMap = async () => {
         >
           {/* Map loads here - CRITICAL: Both width and height must be set */}
         </div>
+        
+        {/* Venue Results Sidebar */}
+        {midwayRestaurants.length > 0 && (
+          <VenueResultsSidebar
+            venues={midwayRestaurants}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            onVenueHover={(placeId) => setHoveredVenueId(placeId)}
+            onVenueClick={(placeId) => {
+              setDetailedPlaceId(placeId);
+              setIsDetailedView(true);
+            }}
+            selectedVenueId={detailedPlaceId}
+          />
+        )}
+        
         {/* Map Status Indicator */}
         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200 z-10">
           <div className="flex items-center space-x-2">
