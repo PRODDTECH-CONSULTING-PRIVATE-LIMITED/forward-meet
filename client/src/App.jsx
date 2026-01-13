@@ -10,6 +10,7 @@ import ParticipantCard from "./components/ParticipantCard";
 import VenueTypeSelector from "./components/VenueTypeSelector";
 import SegmentedControl from "./components/SegmentedControl";
 import SearchRadiusSlider from "./components/SearchRadiusSlider";
+import TravelModeSelector from "./components/TravelModeSelector";
 
 // Main App component
 const App = (props) => {
@@ -39,6 +40,7 @@ const App = (props) => {
     return now.toTimeString().slice(0, 5);
   });
   const [placeType, setPlaceType] = useState("restaurant");
+  const [travelMode, setTravelMode] = useState("driving");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -592,8 +594,7 @@ const initMap = () => {
     }
 
     let departureTime = null;
-    const currentTravelMode = "driving";
-    if (currentTravelMode === "driving" && selectedDate && selectedTime) {
+    if (travelMode === "driving" && selectedDate && selectedTime) {
       const dateTimeString = `${selectedDate}T${selectedTime}:00`;
       const selectedDateTime = new Date(dateTimeString);
       if (selectedDateTime.getTime() > Date.now()) {
@@ -616,7 +617,7 @@ const initMap = () => {
             location2: location2InputRef.current?.value || location2,
             searchMode,
             searchRadius,
-            travelMode: currentTravelMode,
+            travelMode,
             departureTime,
             placeType,
           }),
@@ -892,6 +893,12 @@ const initMap = () => {
                 /> 
                 <TrafficPrediction {...props} setSelectedDate={setSelectedDate} selectedDate={selectedDate}/>
                 </div>
+
+                {/* Travel Mode Selection */}
+                <TravelModeSelector
+                  selected={travelMode}
+                  onSelect={setTravelMode}
+                />
 
                 {/* Venue Type Selection */}
                 <VenueTypeSelector
