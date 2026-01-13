@@ -748,7 +748,7 @@ const initMap = async () => {
 
       if (response.ok) {
         setMidwayRestaurants(data);
-        setShowFilters(false);
+        // setShowFilters(false);
       } else {
         setError(
           data.error ||
@@ -1143,7 +1143,7 @@ const initMap = async () => {
           ) : midwayRestaurants.length > 0 ? (
             <>
               {/* Results Header */}
-              <div className="mt-8 mb-4 p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg w-full">
+              {/* <div className="mt-8 mb-4 p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg w-full">
                 <div className="flex items-center justify-between w-full overflow-hidden">
                   <div className="flex items-center">
                     <svg
@@ -1185,19 +1185,19 @@ const initMap = async () => {
                     <option value={midwayRestaurants.length}>All</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
 
               {/* Detailed View */}
-              {isDetailedView && (
+              {/* {isDetailedView && (
                 <GooglePlaceCard
                   placeId={detailedPlaceId}
                   setDetailedPlaceId={setDetailedPlaceId}
                   setIsDetailedView={setIsDetailedView}
                 />
-              )}
+              )} */}
 
               {/* Restaurant Cards */}
-              {!isDetailedView && currentItems.map((location, index) => (
+              {/* {!isDetailedView && currentItems.map((location, index) => (
               <div
                 id={`place-${location.place_id}`} // for scrolling from marker
                 key={location.place_id}
@@ -1226,42 +1226,9 @@ const initMap = async () => {
                   locationInfo={location}
                 />
               </div>
-            ))}
+            ))} */}
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && !isDetailedView && (
-                <div className="mt-6 bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                  <div className="flex justify-between items-center">
-                    <button
-                      onClick={handlePrevPage}
-                      disabled={currentPage === 1}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        currentPage === 1
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-blue-500 text-white hover:bg-blue-600 transform hover:scale-105"
-                      }`}
-                    >
-                      Previous
-                    </button>
-
-                    <span className="text-sm text-gray-600">
-                      Page {currentPage} of {totalPages}
-                    </span>
-
-                    <button
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        currentPage === totalPages
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-blue-500 text-white hover:bg-blue-600 transform hover:scale-105"
-                      }`}
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Pagination handled in Sidebar */}
             </>
           ) : null}
 
@@ -1318,7 +1285,7 @@ const initMap = async () => {
         {/* Venue Results Sidebar */}
         {midwayRestaurants.length > 0 && (
           <VenueResultsSidebar
-            venues={midwayRestaurants}
+            venues={currentItems}
             isOpen={isSidebarOpen}
             onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             onVenueHover={(placeId) => setHoveredVenueId(placeId)}
@@ -1327,6 +1294,10 @@ const initMap = async () => {
               setIsDetailedView(true);
             }}
             selectedVenueId={detailedPlaceId}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+            totalResults={midwayRestaurants.length}
           />
         )}
         

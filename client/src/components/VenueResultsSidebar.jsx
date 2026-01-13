@@ -7,7 +7,11 @@ const VenueResultsSidebar = ({
   onToggle, 
   onVenueHover, 
   onVenueClick,
-  selectedVenueId 
+  selectedVenueId,
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalResults
 }) => {
   return (
     <>
@@ -77,7 +81,7 @@ const VenueResultsSidebar = ({
               fontSize: '14px',
               fontWeight: 500
             }}>
-              {venues.length} found
+              {totalResults} found
             </span>
           </div>
           <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
@@ -116,6 +120,66 @@ const VenueResultsSidebar = ({
             ))
           )}
         </div>
+
+        {/* Pagination Footer */}
+        {totalPages > 1 && (
+          <div style={{
+            padding: '16px',
+            borderTop: '1px solid #e2e8f0',
+            background: '#f8fafc',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{
+                background: currentPage === 1 ? '#f1f5f9' : 'white',
+                color: currentPage === 1 ? '#94a3b8' : '#4F46E5',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: currentPage === 1 ? 'none' : '0 2px 4px rgba(0,0,0,0.05)'
+              }}
+            >
+              <ChevronLeft size={16} /> Prev
+            </button>
+
+            <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{
+                background: currentPage === totalPages ? '#f1f5f9' : 'white',
+                color: currentPage === totalPages ? '#94a3b8' : '#4F46E5',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: currentPage === totalPages ? 'none' : '0 2px 4px rgba(0,0,0,0.05)'
+              }}
+            >
+              Next <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
