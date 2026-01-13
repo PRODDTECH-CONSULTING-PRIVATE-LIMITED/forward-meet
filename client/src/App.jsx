@@ -82,7 +82,7 @@ const App = (props) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Get user location and initialize map
+  // Get user location
   useEffect(() => {
     const getUserLocation = () => {
       if (navigator.geolocation) {
@@ -106,8 +106,10 @@ const App = (props) => {
     };
 
     getUserLocation();
+  }, []);
 
-    // Initialize map only when mapsLoaded is true
+  // Initialize map when mapsLoaded is true
+  useEffect(() => {
     if (mapsLoaded) {
       initMap();
     }
@@ -118,7 +120,7 @@ const App = (props) => {
         directionsRenderer.setMap(null);
       }
     };
-  }, [mapsLoaded]);
+  }, [mapsLoaded, userLocation]);
 
   // Initialize autocomplete
   useEffect(() => {
@@ -149,11 +151,115 @@ const cleanMapStyles = [
   { featureType: "transit.line", stylers: [{ visibility: "off" }] },
 ];
 
-const initMap = () => {
+const initMap = async () => {
   if (mapRef.current && window.google?.maps?.Map) {
+    let initialCenter = { lat: 20.5937, lng: 78.9629 }; // Default to India center
+    let initialZoom = 5;
+    
+    // Manual city center coordinates that align with Google Maps labels
+    const cityCenters = {
+      'Bengaluru': { lat: 12.9716, lng: 77.5946, zoom: 11 },
+      'Bangalore': { lat: 12.9716, lng: 77.5946, zoom: 11 },
+      'Mumbai': { lat: 19.0760, lng: 72.8777, zoom: 11 },
+      'Delhi': { lat: 28.7041, lng: 77.1025, zoom: 11 },
+      'Hyderabad': { lat: 17.3850, lng: 78.4867, zoom: 11 },
+      'Chennai': { lat: 13.0827, lng: 80.2707, zoom: 11 },
+      'Kolkata': { lat: 22.5726, lng: 88.3639, zoom: 11 },
+      'Pune': { lat: 18.5204, lng: 73.8567, zoom: 11 }
+    };
+    
+    // If user location is available, get the city center
+    if (userLocation && window.google?.maps?.Geocoder) {
+      try {
+        const geocoder = new window.google.maps.Geocoder();
+        const response = await geocoder.geocode({
+          location: { lat: userLocation.lat, lng: userLocation.lng }
+        });
+        
+        if (response.results && response.results.length > 0) {
+          // Find the locality (city) component
+          const cityResult = response.results.find(result => 
+            result.types.includes('locality') || result.types.includes('administrative_area_level_2')
+          );
+          
+          if (cityResult) {
+            // Extract city name
+            const cityName = cityResult.address_components?.find(
+              comp => comp.types.includes('locality')
+            )?.long_name;
+            
+            console.log('Detected city:', cityName);
+            
+            // Check if we have manual coordinates for this city
+            if (cityName && cityCenters[cityName]) {
+              console.log('Using manual coordinates for', cityName);
+              initialCenter = { lat: cityCenters[cityName].lat, lng: cityCenters[cityName].lng };
+              initialZoom = cityCenters[cityName].zoom;
+            } else if (cityName && cityResult.geometry && cityResult.geometry.location) {
+              // Use Places API as fallback for cities not in our manual list
+            
+
+              // Create a temporary map to use PlacesService
+              const tempMap = new window.google.maps.Map(mapRef.current, {
+                center: { lat: userLocation.lat, lng: userLocation.lng },
+                zoom: 11
+              });
+              
+              const service = new window.google.maps.places.PlacesService(tempMap);
+              
+              // Search for the city to get better centered coordinates
+              const searchPromise = new Promise((resolve) => {
+                service.textSearch(
+                  {
+                    query: cityName,
+                    type: 'locality'
+                  },
+                  (results, status) => {
+                    if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results[0]) {
+                      resolve({
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng()
+                      });
+                    } else {
+                      // Fallback to geocoder result
+                      resolve({
+                        lat: cityResult.geometry.location.lat(),
+                        lng: cityResult.geometry.location.lng()
+                      });
+                    }
+                  }
+                );
+              });
+              
+              initialCenter = await searchPromise;
+              initialZoom = 11;
+            } else if (cityResult.geometry && cityResult.geometry.location) {
+              initialCenter = {
+                lat: cityResult.geometry.location.lat(),
+                lng: cityResult.geometry.location.lng()
+              };
+              initialZoom = 11;
+            } else {
+              // Fallback to user location if city not found
+              initialCenter = { lat: userLocation.lat, lng: userLocation.lng };
+              initialZoom = 11;
+            }
+          } else {
+            // Fallback to user location if city not found
+            initialCenter = { lat: userLocation.lat, lng: userLocation.lng };
+            initialZoom = 11;
+          }
+        }
+      } catch (error) {
+        console.warn('Geocoding failed, using user location:', error);
+        initialCenter = { lat: userLocation.lat, lng: userLocation.lng };
+        initialZoom = 11;
+      }
+    }
+    
     const googleMap = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 20.5937, lng: 78.9629 },
-      zoom: 5,
+      center: initialCenter,
+      zoom: initialZoom,
       // clickableIcons: false,
       styles: cleanMapStyles
     });
@@ -545,8 +651,17 @@ const initMap = () => {
       showMarkerForPlace(detailedPlaceId);
     } else if (!isDetailedView && midwayRestaurants.length > 0) {
       showMarkersForAllPlaces();
+    } else if (map && midwayRestaurants.length === 0 && userLocation) {
+      // Show user's city when no search results
+      map.setCenter({ lat: userLocation.lat, lng: userLocation.lng });
+      map.setZoom(12);
+      // Clear any existing markers and routes
+      markers.forEach((m) => m.setMap(null));
+      if (directionsRenderer) {
+        directionsRenderer.setDirections({ routes: [] });
+      }
     }
-  }, [isDetailedView, detailedPlaceId, midwayRestaurants, map, directionsService, directionsRenderer]);
+  }, [isDetailedView, detailedPlaceId, midwayRestaurants, map, directionsService, directionsRenderer, userLocation]);
 
   // Image viewer functions
   const openImageViewer = (images, index = 0) => {
@@ -891,7 +1006,13 @@ const initMap = () => {
                     }
                   }}
                 /> 
-                <TrafficPrediction {...props} setSelectedDate={setSelectedDate} selectedDate={selectedDate}/>
+                <TrafficPrediction 
+                  {...props} 
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  selectedTime={selectedTime}
+                  setSelectedTime={setSelectedTime}
+                />
                 </div>
 
                 {/* Travel Mode Selection */}
