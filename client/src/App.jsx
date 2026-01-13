@@ -939,7 +939,7 @@ const initMap = async () => {
                   : "opacity-0 max-h-0 overflow-hidden"
               }`}
             >
-              <form onSubmit={handleSearch} className="space-y-4 w-full">
+              {/* <form onSubmit={(e) => e.preventDefault()} className="space-y-4 w-full"> */}
                 {/* Location Inputs
                 <div className="space-y-4 w-full">
                   <div className="w-full">
@@ -1050,6 +1050,7 @@ const initMap = async () => {
                   type="submit"
                   className="w-full mt-4 bg-gradient-to-br from-indigo-600 to-violet-700 hover:from-indigo-700 hover:to-violet-800 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 overflow-hidden group relative"
                   disabled={loading}
+                  onClick={handleSearch}
                 >
                   <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                   {loading ? (
@@ -1095,7 +1096,7 @@ const initMap = async () => {
                     </>
                   )}
                 </button>
-              </form>
+              {/* </form> */}
             </div>
           )}
 
