@@ -1,0 +1,39 @@
+import React from 'react';
+
+const VenueTypeSelector = ({ selected, onSelect }) => {
+  const venueTypes = [
+    { id: 'restaurant', icon: '🍽️', label: 'Restaurant' },
+    { id: 'cafe', icon: '☕', label: 'Cafe' },
+    { id: 'bar', icon: '🍺', label: 'Bar' },
+    { id: 'park', icon: '🌳', label: 'Park' },
+    { id: 'gym', icon: '💪', label: 'Gym' },
+  ];
+
+  return (
+    <div className="space-y-3">
+      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+        🍽️ What type of venue?
+      </label>
+      <div className="venue-type-grid">
+        {venueTypes.map((type) => (
+          <button
+            key={type.id}
+            onClick={() => onSelect(type.id)}
+            className={`venue-type-button ${selected === type.id ? 'active' : ''}`}
+            type="button"
+          >
+            <span className="venue-type-icon">{type.icon}</span>
+            <span className="venue-type-label">{type.label}</span>
+          </button>
+        ))}
+      </div>
+      {selected && (
+        <p className="text-xs text-slate-500">
+          Selected: {venueTypes.find(t => t.id === selected)?.label}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default VenueTypeSelector;

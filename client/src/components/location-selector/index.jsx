@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
+import ParticipantCard from '../ParticipantCard';
 
 const LocationSelector = ({ 
   location1, 
@@ -81,52 +82,42 @@ const LocationSelector = ({
   };
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="w-full">
-        <label className="block text-gray-700 text-sm font-semibold mb-2">
-          <span className="flex items-center">
-            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-            Starting Location
-          </span>
-        </label>
-        <div className="relative">
-          <input
-            ref={location1InputRef}
-            type="text"
-            placeholder="e.g., Jayanagar, Bengaluru"
-            value={tempLocation1}
-            onChange={(e) => {
-              setTempLocation1(e.target.value);
-              setLocation1(e.target.value);
-            }}
-            className="w-full py-3 px-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white transition-all duration-200 font-medium"
-            autoComplete="off"
-          />
-        </div>
-      </div>
+    <div className="space-y-3 w-full">
+      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+        📍 Meeting Participants
+      </label>
+      
+      <ParticipantCard
+        label="Person A"
+        value={tempLocation1}
+        onChange={(e) => {
+          setTempLocation1(e.target.value);
+          setLocation1(e.target.value);
+        }}
+        placeholder="e.g., Jayanagar, Bengaluru"
+        avatarClass="person-a"
+        onClear={() => {
+          setTempLocation1('');
+          setLocation1('');
+        }}
+        inputRef={location1InputRef}
+      />
 
-      <div className="w-full">
-        <label className="block text-gray-700 text-sm font-semibold mb-2">
-          <span className="flex items-center">
-            <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-            Destination Location
-          </span>
-        </label>
-        <div className="relative">
-          <input
-            ref={location2InputRef}
-            type="text"
-            placeholder="e.g., Indiranagar, Bengaluru"
-            value={tempLocation2}
-            onChange={(e) => {
-              setTempLocation2(e.target.value);
-              setLocation2(e.target.value);
-            }}
-            className="w-full py-3 px-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200 font-medium"
-            autoComplete="off"
-          />
-        </div>
-      </div>
+      <ParticipantCard
+        label="Person B"
+        value={tempLocation2}
+        onChange={(e) => {
+          setTempLocation2(e.target.value);
+          setLocation2(e.target.value);
+        }}
+        placeholder="e.g., Indiranagar, Bengaluru"
+        avatarClass="person-b"
+        onClear={() => {
+          setTempLocation2('');
+          setLocation2('');
+        }}
+        inputRef={location2InputRef}
+      />
     </div>
   );
 };

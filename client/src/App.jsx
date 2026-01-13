@@ -6,6 +6,10 @@ import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
 import Header from "./components/header/Index";
 import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
+import ParticipantCard from "./components/ParticipantCard";
+import VenueTypeSelector from "./components/VenueTypeSelector";
+import SegmentedControl from "./components/SegmentedControl";
+import SearchRadiusSlider from "./components/SearchRadiusSlider";
 
 // Main App component
 const App = (props) => {
@@ -889,103 +893,29 @@ const initMap = () => {
                 <TrafficPrediction {...props} setSelectedDate={setSelectedDate} selectedDate={selectedDate}/>
                 </div>
 
-                {/* Place Type Selection */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="placeType"
-                    className="block text-slate-700 text-sm font-bold ml-1"
-                  >
-                    What type of place?
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="placeType"
-                      value={placeType}
-                      onChange={(e) => setPlaceType(e.target.value)}
-                      className="w-full appearance-none py-3.5 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all duration-200 text-slate-700 font-bold"
-                    >
-                      <option value="restaurant">🍽️ Restaurant</option>
-                      <option value="cafe">☕ Coffee Shop</option>
-                      <option value="bar">🍺 Bar</option>
-                      <option value="night_club">🎵 Night Club</option>
-                      <option value="establishment">🏢 Any Establishment</option>
-                      <option value="co_working_space">💼 Co-working Space</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+                {/* Venue Type Selection */}
+                <VenueTypeSelector
+                  selected={placeType}
+                  onSelect={setPlaceType}
+                />
 
                 {/* Search Mode - Segmented Control */}
-                <div className="space-y-2">
-                  <p className="text-slate-700 font-bold text-sm ml-1">
-                    Optimize search by:
-                  </p>
-                  <div className="flex p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
-                    <button
-                      type="button"
-                      onClick={() => setSearchMode("time")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all duration-200 ${
-                        searchMode === "time"
-                          ? "bg-white text-indigo-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-700"
-                      }`}
-                    >
-                      <span className="text-lg">⏱️</span>
-                      <span className="text-sm">Time</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSearchMode("distance")}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all duration-200 ${
-                        searchMode === "distance"
-                          ? "bg-white text-indigo-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-700"
-                      }`}
-                    >
-                      <span className="text-lg">📏</span>
-                      <span className="text-sm">Distance</span>
-                    </button>
-                  </div>
-                </div>
+                <SegmentedControl
+                  options={[
+                    { value: 'time', label: 'Time', icon: '⏱️' },
+                    { value: 'distance', label: 'Distance', icon: '📏' }
+                  ]}
+                  selected={searchMode}
+                  onChange={setSearchMode}
+                />
 
                 {/* Search Radius */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <label
-                      htmlFor="searchRadius"
-                      className="text-slate-700 text-sm font-bold"
-                    >
-                      🎯 Search Radius
-                    </label>
-                    <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold border border-indigo-100">
-                      {searchRadius} km
-                    </span>
-                  </div>
-                  <div className="px-1">
-                    <input
-                      type="range"
-                      id="searchRadius"
-                      min="1"
-                      max="50"
-                      value={searchRadius}
-                      onChange={(e) => setSearchRadius(parseInt(e.target.value))}
-                      className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                      style={{
-                        background: `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${
-                          (searchRadius / 50) * 100
-                        }%, #e2e8f0 ${(searchRadius / 50) * 100}%, #e2e8f0 100%)`,
-                      }}
-                    />
-                    <div className="flex justify-between text-[11px] font-bold text-slate-400 mt-2 px-0.5">
-                      <span>1km</span>
-                      <span>50km</span>
-                    </div>
-                  </div>
-                </div>
+                <SearchRadiusSlider
+                  value={searchRadius}
+                  onChange={setSearchRadius}
+                  min={1}
+                  max={50}
+                />
 
                 {/* Search Button */}
                 <button
