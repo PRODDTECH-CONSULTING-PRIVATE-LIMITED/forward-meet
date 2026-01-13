@@ -11,7 +11,9 @@ const VenueResultsSidebar = ({
   currentPage,
   totalPages,
   onPageChange,
-  totalResults
+  totalResults,
+  hoveredVenueId,
+  itemsPerPage
 }) => {
   return (
     <>
@@ -107,17 +109,21 @@ const VenueResultsSidebar = ({
               </p>
             </div>
           ) : (
-            venues.map((venue, index) => (
-              <VenueCard
-                key={venue.place_id}
-                venue={venue}
-                index={index}
+            venues.map((venue, index) => {
+              const globalIndex = index + (currentPage - 1) * itemsPerPage;
+              return (
+                <VenueCard
+                  key={venue.place_id}
+                  venue={venue}
+                  index={globalIndex}
                 isSelected={selectedVenueId === venue.place_id}
+                isHovered={hoveredVenueId === venue.place_id}
                 onHover={() => onVenueHover(venue.place_id)}
                 onLeave={() => onVenueHover(null)}
                 onClick={() => onVenueClick(venue.place_id)}
-              />
-            ))
+                />
+              );
+            })
           )}
         </div>
 
@@ -185,10 +191,18 @@ const VenueResultsSidebar = ({
   );
 };
 
-const VenueCard = ({ venue, index, isSelected, onHover, onLeave, onClick }) => {
+const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onClick }) => {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const carouselRef = useRef(null);
+  const cardRef = useRef(null);
   const isInternalScroll = useRef(false);
+
+  // Scroll into view when hovered from map
+  useEffect(() => {
+    if (isHovered && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isHovered]);
 
   const getVenueIcon = (types) => {
     if (!types) return '📍';
@@ -238,12 +252,13 @@ const VenueCard = ({ venue, index, isSelected, onHover, onLeave, onClick }) => {
 
   return (
     <div
+      ref={cardRef}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
       onClick={onClick}
       style={{
-        background: isSelected ? '#f0f9ff' : 'white',
-        border: isSelected ? '2px solid #4F46E5' : '1px solid #e2e8f0',
+        background: isSelected || isHovered ? '#f0f9ff' : 'white',
+        border: isSelected || isHovered ? '2px solid #4F46E5' : '1px solid #e2e8f0',
         borderRadius: '16px',
         marginBottom: '16px',
         cursor: 'pointer',

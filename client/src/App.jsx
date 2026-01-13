@@ -417,86 +417,15 @@ const initMap = async () => {
         }
       });
 
-      ////   place preview on hover  ////
-      const service = new window.google.maps.places.PlacesService(map);
-      
-      //// on hover detail with card ////
+      //// on hover focus sidebar card ////
       marker.addListener("mouseover", () => {
-          service.getDetails(
-            {
-              placeId: restaurant.place_id,
-              fields: ["name", "formatted_address", "rating", "user_ratings_total", "photos", "types"]
+        setHoveredVenueId(restaurant.place_id);
+      });
 
-            },
-            (place, status) => {
-              if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-
-                //Display name
-                const name =
-                    place?.name ||
-                    restaurant?.name ||
-                    place?.formatted_address ||
-                    "Unknown Place";
-                
-                // Displays photo if available
-                const photoUrl =
-                  place.photos && place.photos.length > 0
-                    ? place.photos[0].getUrl({ maxWidth: 300, maxHeight: 180 })
-                    : "";
-
-                // Rating display
-                const stars = place.rating
-                ? `${'★'.repeat(Math.floor(place.rating))}${place.rating % 1 ? '½' : ''}`
-                    .padEnd(5, '☆') // fill remaining stars
-                    .replace(/★/g, '<span style="color:#fbbc04;">★</span>')
-                    .replace(/½/g, '<span style="color:#fbbc04;">★</span><span style="color:#fbbc04; opacity:0.5;">★</span>') +
-                  ` <span style="color:#555;">(${place.user_ratings_total})</span>`
-                : "";
-                // HTML for the card
-                const content = `
-                  <div style="
-                    width: 260px;
-                    font-family: Roboto, Arial, sans-serif;
-                    background: white;
-                    border-radius: 12px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                    overflow: hidden;
-                    animation: fadeIn 0.2s ease-out;
-                    position: relative;
-                  ">
-                    ${photoUrl ? `<img src="${photoUrl}" style="width:100%; height:150px; object-fit:cover;"/>` : ""}
-                    <div style="padding: 8px;">
-                      <div style="font-size:20px; font-weight:bold; margin-bottom:4px; color:black;">
-                          ${name}
-                      </div>
-                      <div style="font-size:15px; color:#555; margin-bottom:6px;">${place.formatted_address || ""}</div>
-                      <div style="font-size:13px;">${stars}</div>
-                    </div>
-                    <div style="
-                      position: absolute;
-                      bottom: -8px;
-                      left: 20px;
-                      width: 0;
-                      height: 0;
-                      border-left: 8px solid transparent;
-                      border-right: 8px solid transparent;
-                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                  </div>
-                  
-                `;
-
-                // Show info window
-                infoWindow.setContent(content);
-                infoWindow.open(map, marker);
-              }
-            }
-          );
-        });
-
-      // Close card on mouseout
-          marker.addListener("mouseout", () => {
-            infoWindow.close();
-          });    
+      // Clear focus on mouseout
+      marker.addListener("mouseout", () => {
+        setHoveredVenueId(null);
+      });    
 
       // marker.addListener("mouseover", () => {
       //   const content = `
@@ -840,6 +769,19 @@ const initMap = async () => {
   const handlePrevPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
+
+  // Auto-switch page when hovering over a map marker
+  useEffect(() => {
+    if (hoveredVenueId) {
+      const index = midwayRestaurants.findIndex(v => v.place_id === hoveredVenueId);
+      if (index !== -1) {
+        const pageOfVenue = Math.floor(index / itemsPerPage) + 1;
+        if (pageOfVenue !== currentPage) {
+          setCurrentPage(pageOfVenue);
+        }
+      }
+    }
+  }, [hoveredVenueId, midwayRestaurants, itemsPerPage, currentPage]);
 
   // Don't render until libraries are loaded
   if (!placesLoaded || !mapsLoaded) {
@@ -1298,6 +1240,8 @@ const initMap = async () => {
             totalPages={totalPages}
             onPageChange={(page) => setCurrentPage(page)}
             totalResults={midwayRestaurants.length}
+            hoveredVenueId={hoveredVenueId}
+            itemsPerPage={itemsPerPage}
           />
         )}
         
