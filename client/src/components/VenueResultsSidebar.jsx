@@ -61,44 +61,43 @@ const VenueResultsSidebar = ({
       >
         {/* Header */}
         <div style={{
-          padding: '24px 20px',
+          padding: '16px 20px',
           borderBottom: '1px solid var(--color-border)',
           background: 'var(--gradient-primary)',
           color: 'white',
           position: 'relative',
-          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+          boxShadow: '0 2px 8px rgba(99, 102, 241, 0.15)',
+          zIndex: 10
         }}>
           {/* Close Button */}
           <button
             onClick={onToggle}
             style={{
               position: 'absolute',
-              top: '20px',
-              right: '20px',
-              background: 'rgba(255, 255, 255, 0.25)',
-              backdropFilter: 'blur(10px)',
+              top: '14px',
+              right: '16px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(8px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '8px',
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               zIndex: 10,
-              fontSize: '20px',
-              fontWeight: 400,
+              fontSize: '18px',
               color: 'white',
               lineHeight: 1
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.35)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
               e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
               e.currentTarget.style.transform = 'scale(1)';
             }}
             aria-label="Close sidebar"
@@ -109,36 +108,31 @@ const VenueResultsSidebar = ({
 
           <div style={{ 
             display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '8px',
-            paddingRight: '60px' // Make room for close button
+            alignItems: 'baseline',
+            gap: '10px',
+            paddingRight: '40px' 
           }}>
-            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, tracking: '-0.025em' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em' }}>
               Suggested Venues
             </h3>
             <span style={{ 
-              background: 'rgba(255,255,255,0.15)', 
-              backdropFilter: 'blur(4px)',
-              padding: '4px 12px', 
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: 800,
+              fontSize: '11px',
+              fontWeight: 700,
+              opacity: 0.9,
+              background: 'rgba(255,255,255,0.15)',
+              padding: '2px 8px',
+              borderRadius: '6px',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              border: '1px solid rgba(255,255,255,0.2)'
+              letterSpacing: '0.05em'
             }}>
-              {totalResults} results
+              {totalResults}
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, opacity: 0.85, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '16px' }}>📍</span> Optimized for you both
-          </p>
         </div>
 
         {/* Filter Controls */}
         <div style={{
-          padding: '24px',
+          padding: '12px 20px',
           borderBottom: '1px solid #e2e8f0',
           background: '#f8fafc'
         }}>

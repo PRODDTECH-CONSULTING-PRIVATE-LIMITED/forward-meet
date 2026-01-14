@@ -6,15 +6,24 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
   const sliderBackground = `linear-gradient(to right, #4F46E5 0%, #4F46E5 ${percentage}%, #E2E8F0 ${percentage}%, #E2E8F0 100%)`;
 
   return (
-    <div className="space-y-3">
-      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-        ⏱️ Time Difference Margin
-      </label>
-      <div className="radius-slider-container">
-        <div className="radius-value-display">
-          <span className="radius-value-number">{value}</span>
-          <span className="radius-value-unit">min</span>
+    <div style={{ marginTop: '14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
+          ⏱️ Time Margin
+        </label>
+        <div style={{ 
+          fontSize: '13px', 
+          fontWeight: 700, 
+          color: '#4F46E5',
+          background: 'rgba(79, 70, 229, 0.1)',
+          padding: '2px 8px',
+          borderRadius: '6px'
+        }}>
+          {value} min
         </div>
+      </div>
+      
+      <div className="radius-slider-container">
         <input
           type="range"
           min={min}
@@ -22,12 +31,11 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="radius-slider"
-          style={{ background: sliderBackground }}
+          style={{ background: sliderBackground, height: '4px' }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.75rem', color: '#64748b', marginTop: '8px' }}>
-          <span>{min} min</span>
-          <span>{Math.floor((max - min) / 2)} min</span>
-          <span>{max} min</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>
+          <span>{min}m</span>
+          <span>{max}m</span>
         </div>
       </div>
       <p className="text-xs text-slate-500 flex items-start gap-2">

@@ -14,8 +14,9 @@ const TrafficPrediction = (props) => {
                     style={{ flex: 1, padding: '18px 20px', cursor: 'pointer' }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div className="participant-avatar bg-indigo-50 shadow-sm transition-all duration-300 group-hover:bg-indigo-100/50">
-                            <CalendarOutlined style={{ fontSize: '1.25rem', color: '#6366f1' }} />
+                        <div className="participant-avatar bg-slate-50 shadow-md transition-all duration-300 group-hover:bg-indigo-50/80">
+                            <div className="absolute inset-0 bg-white/40 rounded-full scale-90 blur-sm group-hover:blur-none transition-all duration-300"></div>
+                            <CalendarOutlined style={{ fontSize: '1.2rem', color: '#6366f1', position: 'relative', zIndex: 1 }} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">
@@ -51,8 +52,9 @@ const TrafficPrediction = (props) => {
                     style={{ flex: 1, padding: '18px 20px', cursor: 'pointer' }}
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div className="participant-avatar bg-indigo-50 shadow-sm transition-all duration-300 group-hover:bg-indigo-100/50">
-                            <ClockCircleOutlined style={{ fontSize: '1.25rem', color: '#6366f1' }} />
+                        <div className="participant-avatar bg-slate-50 shadow-md transition-all duration-300 group-hover:bg-indigo-50/80">
+                            <div className="absolute inset-0 bg-white/40 rounded-full scale-90 blur-sm group-hover:blur-none transition-all duration-300"></div>
+                            <ClockCircleOutlined style={{ fontSize: '1.2rem', color: '#6366f1', position: 'relative', zIndex: 1 }} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">
@@ -84,13 +86,15 @@ const TrafficPrediction = (props) => {
             </div>
 
             {/* Info Section */}
-            <div className="mt-5 flex items-center gap-2.5 px-2 opacity-90 transition-opacity hover:opacity-100 text-left">
-                <InfoCircleOutlined style={{ fontSize: '14px', color: '#6366f1' }} />
+            <div className="mt-5 flex items-center gap-3 px-1.5 opacity-80 group/info">
+                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center transition-colors group-hover/info:bg-indigo-50">
+                    <InfoCircleOutlined style={{ fontSize: '13px', color: '#475569' }} />
+                </div>
                 <p 
-                    className="font-medium text-slate-500 tracking-tight leading-tight ml-2"
-                    style={{ fontSize: '13px' }}
+                    className="font-semibold text-slate-500 tracking-tight leading-tight"
+                    style={{ fontSize: '12.5px' }}
                 >
-                    {" "}Using predictive traffic modeling to ensure accurate travel time
+                    Finds venues with equal travel time for everyone.
                 </p>
             </div>
 
