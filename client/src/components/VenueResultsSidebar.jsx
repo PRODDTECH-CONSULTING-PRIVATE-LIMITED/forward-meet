@@ -31,19 +31,22 @@ const VenueResultsSidebar = ({
       <div
         className="venue-results-sidebar"
         style={{
-          position: 'absolute',
-          right: 0,
+          position: 'fixed',
+          left: 0,
           top: 0,
           bottom: 0,
-          width: '450px',
+          width: '30vw',
+          minWidth: '350px',
+          maxWidth: '500px',
           background: 'white',
-          borderLeft: '1px solid #e2e8f0',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+          borderRight: '1px solid #e2e8f0',
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.3s ease',
-          zIndex: 999,
+          zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-4px 0 12px rgba(0,0,0,0.08)'
+          boxShadow: '4px 0 12px rgba(0,0,0,0.08)',
+          isolation: 'isolate'
         }}
       >
         {/* Header */}

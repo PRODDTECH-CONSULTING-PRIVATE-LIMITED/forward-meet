@@ -56,7 +56,7 @@ const ParticipantCard = ({
               e.stopPropagation();
               onClear();
             }}
-            style={{ color: '#94a3b8', transition: 'color 0.2s', zIndex: 2 }}
+            style={{ color: '#94a3b8', transition: 'color 0.2s' }}
             type="button"
             onMouseEnter={(e) => e.currentTarget.style.color = '#475569'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
