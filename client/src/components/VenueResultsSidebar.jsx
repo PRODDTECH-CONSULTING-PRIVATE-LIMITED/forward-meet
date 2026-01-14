@@ -26,6 +26,15 @@ const VenueResultsSidebar = ({
   timeDifferenceMargin,
   onTimeDifferenceMarginChange
 }) => {
+  const listContainerRef = useRef(null);
+
+  // Scroll list to top when page changes
+  useEffect(() => {
+    if (listContainerRef.current) {
+      listContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
   return (
     <>
       {/* Sidebar */}
@@ -157,11 +166,14 @@ const VenueResultsSidebar = ({
         </div>
 
         {/* Venue List */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '12px'
-        }}>
+        <div 
+          ref={listContainerRef}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '12px'
+          }}
+        >
           {loading ? (
             <div style={{
               display: 'flex',
