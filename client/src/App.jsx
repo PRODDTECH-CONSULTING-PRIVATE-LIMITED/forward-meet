@@ -1240,7 +1240,7 @@ const initMap = async () => {
         </div>
         
         {/* Venue Results Sidebar */}
-        {midwayRestaurants.length > 0 && (
+        {(midwayRestaurants.length > 0 || loading) && (
           <VenueResultsSidebar
             venues={currentItems}
             isOpen={isSidebarOpen}
@@ -1257,6 +1257,7 @@ const initMap = async () => {
             totalResults={midwayRestaurants.length}
             hoveredVenueId={hoveredVenueId}
             itemsPerPage={itemsPerPage}
+            loading={loading}
             searchMode={searchMode}
             onSearchModeChange={setSearchMode}
             searchRadius={searchRadius}

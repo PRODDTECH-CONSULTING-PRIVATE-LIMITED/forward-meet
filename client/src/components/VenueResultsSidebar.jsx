@@ -17,6 +17,7 @@ const VenueResultsSidebar = ({
   totalResults,
   hoveredVenueId,
   itemsPerPage,
+  loading,
   // Filter controls
   searchMode,
   onSearchModeChange,
@@ -161,7 +162,33 @@ const VenueResultsSidebar = ({
           overflowY: 'auto',
           padding: '12px'
         }}>
-          {venues.length === 0 ? (
+          {loading ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '48px 20px',
+              color: '#64748b'
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                border: '4px solid #e2e8f0',
+                borderTop: '4px solid #4F46E5',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '16px'
+              }} />
+              <p style={{ fontSize: '14px', fontWeight: 500 }}>Loading venues...</p>
+              <style>{
+                `@keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }`
+              }</style>
+            </div>
+          ) : venues.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '40px 20px',
