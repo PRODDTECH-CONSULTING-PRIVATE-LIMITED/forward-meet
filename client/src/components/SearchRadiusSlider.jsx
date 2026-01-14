@@ -24,7 +24,7 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 50 }) => {
           className="radius-slider"
           style={{ background: sliderBackground }}
         />
-        <div className="flex justify-between text-xs text-slate-500 mt-2">
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.75rem', color: '#64748b', marginTop: '8px' }}>
           <span>{min}km</span>
           <span>{Math.floor((max - min) / 2)}km</span>
           <span>{max}km</span>

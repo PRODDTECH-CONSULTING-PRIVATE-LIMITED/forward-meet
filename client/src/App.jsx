@@ -844,7 +844,7 @@ const initMap = async () => {
     >
       {/* LEFT PANEL: Search Form and Results Cards */}
       <div className="h-screen bg-white shadow-2xl overflow-y-auto border-r border-slate-100 relative z-10">
-        <div className="p-8 pb-32 w-full">
+        <div className="p-8 w-full" style={{paddingTop: "0px"}}>
           {/* Header */}
           {/* <div className="text-center mb-6 w-full">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4">
@@ -919,14 +919,13 @@ const initMap = async () => {
 
           {showFilters && (
             <div
-              className={`transition-all duration-300 flex flex-col gap-16 ${
+              className={`transition-all duration-300 flex flex-col gap-16 mt-12 ${
                 showFilters
                   ? "opacity-100 max-h-[5000px]"
                   : "opacity-0 max-h-0 overflow-hidden"
               }`}
             >
-                <div className="flex flex-col gap-8">
-                  <LocationSelector
+                <LocationSelector
                   location1={location1}
                   location2={location2}
                   setLocation1={setLocation1}
@@ -950,7 +949,6 @@ const initMap = async () => {
                   selectedTime={selectedTime}
                   setSelectedTime={setSelectedTime}
                 />
-                </div>
 
                 {/* Travel Mode Selection */}
                 <TravelModeSelector
