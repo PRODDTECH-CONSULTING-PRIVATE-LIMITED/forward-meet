@@ -709,6 +709,7 @@ const initMap = async () => {
 
       if (response.ok) {
         setMidwayRestaurants(data);
+        setIsSidebarOpen(true); // Automatically open sidebar when results are loaded
         // setShowFilters(false);
       } else {
         setError(
