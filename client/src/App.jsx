@@ -21,6 +21,8 @@ const App = (props) => {
   const [showFilters, setShowFilters] = useState(true);
   const [location1, setLocation1] = useState("");
   const [location2, setLocation2] = useState("");
+  const [location1Coords, setLocation1Coords] = useState(null);
+  const [location2Coords, setLocation2Coords] = useState(null);
   const [midwayRestaurants, setMidwayRestaurants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -338,6 +340,12 @@ const initMap = async () => {
           } else if (place.name) {
             setLocation1(place.name);
           }
+          if (place.geometry && place.geometry.location) {
+            setLocation1Coords({
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            });
+          }
         });
       }
 
@@ -354,6 +362,12 @@ const initMap = async () => {
           } else if (place.name) {
             setLocation2(place.name);
           }
+          if (place.geometry && place.geometry.location) {
+            setLocation2Coords({
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            });
+          }
         });
       }
     }
@@ -361,58 +375,45 @@ const initMap = async () => {
 
   // Helper function to show all markers and routes
   const showMarkersForAllPlaces = () => {
-    if (!map || !directionsService || !directionsRenderer || midwayRestaurants.length === 0) return;
+    if (!map || !directionsService || !directionsRenderer) return;
 
-    // Clear old markers and routes
+    // Use specific coordinates if available, fallback to restaurants[0] for backward compatibility
+    let loc1 = location1Coords;
+    let loc2 = location2Coords;
+
+    if (midwayRestaurants.length > 0) {
+      const first = midwayRestaurants[0];
+      if (!loc1) loc1 = { lat: first.loc1_lat, lng: first.loc1_lon };
+      if (!loc2) loc2 = { lat: first.loc2_lat, lng: first.loc2_lon };
+    }
+
+    if (!loc1 || !loc2) return;
+
+    // Clear old markers
     markers.forEach((m) => m.setMap(null));
-    directionsRenderer.setDirections({ routes: [] });
+    // directionsRenderer.setDirections({ routes: [] }); // Prevent flickering by not clearing routes before redrawing
 
     const newMarkers = [];
-    const firstRestaurant = midwayRestaurants[0];
-
-    const loc1Coords = {
-      lat: firstRestaurant.loc1_lat,
-      lng: firstRestaurant.loc1_lon
-    };
-    const loc2Coords = {
-      lat: firstRestaurant.loc2_lat,
-      lng: firstRestaurant.loc2_lon
-    };
-
     const loc1Marker = new window.google.maps.Marker({
-      position: loc1Coords,
+      position: loc1,
       map,
       title: "Location 1",
       label: "1",
       icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
-      // icon: {
-      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
-      //   fillColor: "red",
-      //   fillOpacity: 0.8,
-      //   strokeWeight: 0,
-      //   scale: 2,
-      // }
     });
     const loc2Marker = new window.google.maps.Marker({
-      position: loc2Coords,
+      position: loc2,
       map,
       title: "Location 2",
       label: "2",
       icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
-      // icon: {
-      //   path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z", // Example SVG path for a marker
-      //   fillColor: "red",
-      //   fillOpacity: 0.8,
-      //   strokeWeight: 0,
-      //   scale: 2,
-      // }
     });
 
     newMarkers.push(loc1Marker, loc2Marker);
 
     const bounds = new window.google.maps.LatLngBounds();
-    bounds.extend(loc1Coords);
-    bounds.extend(loc2Coords);
+    bounds.extend(loc1);
+    bounds.extend(loc2);
 
     const infoWindow = new window.google.maps.InfoWindow();
 
@@ -484,15 +485,20 @@ const initMap = async () => {
     window.google.maps.event.trigger(map, "resize");
 
     // Display route
-    directionsService.route({
-      origin: loc1Coords,
-      destination: loc2Coords,
-      waypoints: [{
-        location: { lat: firstRestaurant.lat, lng: firstRestaurant.lon },
-        stopover: true
-      }],
+    const routeOptions = {
+      origin: loc1,
+      destination: loc2,
       travelMode: "DRIVING",
-    }, (res, status) => {
+    };
+    
+    if (midwayRestaurants.length > 0) {
+      routeOptions.waypoints = [{
+        location: { lat: midwayRestaurants[0].lat, lng: midwayRestaurants[0].lon },
+        stopover: true
+      }];
+    }
+    
+    directionsService.route(routeOptions, (res, status) => {
       if (status === "OK") {
         directionsRenderer.setDirections(res);
       } else {
@@ -530,7 +536,7 @@ const initMap = async () => {
 
     // Clear existing markers and routes
     markers.forEach((m) => m.setMap(null));
-    directionsRenderer.setDirections({ routes: [] });
+    // directionsRenderer.setDirections({ routes: [] }); // Prevent flickering by not clearing routes before redrawing
 
     const newMarkers = [];
 
@@ -606,7 +612,7 @@ const initMap = async () => {
   useEffect(() => {
     if (isDetailedView && detailedPlaceId) {
       showMarkerForPlace(detailedPlaceId);
-    } else if (!isDetailedView && midwayRestaurants.length > 0) {
+    } else if (!isDetailedView && (midwayRestaurants.length > 0 || (location1Coords && location2Coords))) {
       showMarkersForAllPlaces();
     } else if (map && midwayRestaurants.length === 0 && userLocation) {
       // Show user's city when no search results
@@ -614,11 +620,11 @@ const initMap = async () => {
       map.setZoom(12);
       // Clear any existing markers and routes
       markers.forEach((m) => m.setMap(null));
-      if (directionsRenderer) {
-        directionsRenderer.setDirections({ routes: [] });
-      }
+      // if (directionsRenderer) {
+      //   directionsRenderer.setDirections({ routes: [] });
+      // }
     }
-  }, [isDetailedView, detailedPlaceId, midwayRestaurants, map, directionsService, directionsRenderer, userLocation]);
+  }, [isDetailedView, detailedPlaceId, midwayRestaurants, location1Coords, location2Coords, map, directionsService, directionsRenderer, userLocation]);
 
   // Image viewer functions
   const openImageViewer = (images, index = 0) => {
@@ -654,16 +660,16 @@ const initMap = async () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setMidwayRestaurants([]);
+    // setMidwayRestaurants([]); // Preserve markers while loading
     setInvitationDraft("");
     setInvitationError("");
     setCurrentPage(1);
     setIsDetailedView(false);
     setDetailedPlaceId(null);
 
-    if (directionsRenderer) {
-      directionsRenderer.setDirections({ routes: [] });
-    }
+    // if (directionsRenderer) {
+    //   directionsRenderer.setDirections({ routes: [] });
+    // }
 
     let departureTime = null;
     if (travelMode === "driving" && selectedDate && selectedTime) {
