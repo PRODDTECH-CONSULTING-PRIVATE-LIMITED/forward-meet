@@ -10,8 +10,8 @@ const VenueTypeSelector = ({ selected, onSelect }) => {
   ];
 
   return (
-    <div className="space-y-3">
-      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+    <div className="space-y-4">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
         🍽️ What type of venue?
       </label>
       <div className="venue-type-grid">
@@ -27,11 +27,11 @@ const VenueTypeSelector = ({ selected, onSelect }) => {
           </button>
         ))}
       </div>
-      {selected && (
+      {/* {selected && (
         <p className="text-xs text-slate-500">
           Selected: {venueTypes.find(t => t.id === selected)?.label}
         </p>
-      )}
+      )} */}
     </div>
   );
 };

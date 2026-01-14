@@ -61,11 +61,12 @@ const VenueResultsSidebar = ({
       >
         {/* Header */}
         <div style={{
-          padding: '20px',
-          borderBottom: '1px solid #e2e8f0',
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
+          padding: '24px 20px',
+          borderBottom: '1px solid var(--color-border)',
+          background: 'var(--gradient-primary)',
           color: 'white',
-          position: 'relative'
+          position: 'relative',
+          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
         }}>
           {/* Close Button */}
           <button
@@ -113,27 +114,31 @@ const VenueResultsSidebar = ({
             marginBottom: '8px',
             paddingRight: '60px' // Make room for close button
           }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
-              Venues
+            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, tracking: '-0.025em' }}>
+              Suggested Venues
             </h3>
             <span style={{ 
-              background: 'rgba(255,255,255,0.2)', 
+              background: 'rgba(255,255,255,0.15)', 
+              backdropFilter: 'blur(4px)',
               padding: '4px 12px', 
-              borderRadius: '12px',
-              fontSize: '14px',
-              fontWeight: 500
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              border: '1px solid rgba(255,255,255,0.2)'
             }}>
-              {totalResults} found
+              {totalResults} results
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
-            Hover to preview on map
+          <p style={{ margin: 0, fontSize: '13px', fontWeight: 500, opacity: 0.85, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '16px' }}>📍</span> Optimized for you both
           </p>
         </div>
 
         {/* Filter Controls */}
         <div style={{
-          padding: '16px',
+          padding: '24px',
           borderBottom: '1px solid #e2e8f0',
           background: '#f8fafc'
         }}>
@@ -180,19 +185,32 @@ const VenueResultsSidebar = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '48px 20px',
+              padding: '60px 20px',
               color: '#64748b'
             }}>
               <div style={{
-                width: '48px',
-                height: '48px',
-                border: '4px solid #e2e8f0',
-                borderTop: '4px solid #4F46E5',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                marginBottom: '16px'
-              }} />
-              <p style={{ fontSize: '14px', fontWeight: 500 }}>Loading venues...</p>
+                position: 'relative',
+                width: '64px',
+                height: '64px',
+                marginBottom: '20px'
+              }}>
+                <div style={{
+                  position: 'absolute', width: '100%', height: '100%',
+                  border: '3px solid #f1f5f9', borderRadius: '50%'
+                }} />
+                <div style={{
+                  position: 'absolute', width: '100%', height: '100%',
+                  border: '3px solid transparent', borderTopColor: '#6366f1',
+                  borderRadius: '50%', animation: 'spin 0.8s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite'
+                }} />
+                <div style={{
+                  position: 'absolute', top: '15%', left: '15%', width: '70%', height: '70%',
+                  border: '3px solid transparent', borderTopColor: '#8b5cf6',
+                  borderRadius: '50%', animation: 'spin 1.2s cubic-bezier(0.5, 0.1, 0.4, 0.9) reverse infinite'
+                }} />
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>Optimizing Results</p>
+              <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Finding the perfect midway point...</p>
               <style>{
                 `@keyframes spin {
                   0% { transform: rotate(0deg); }
@@ -373,13 +391,13 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       style={{
-        background: isSelected || isHovered ? '#f0f9ff' : 'white',
-        border: isSelected || isHovered ? '2px solid #4F46E5' : '1px solid #e2e8f0',
-        borderRadius: '16px',
-        marginBottom: '16px',
+        background: isSelected || isHovered ? '#ffffff' : '#ffffff',
+        border: isSelected ? '2px solid #6366f1' : isHovered ? '2px solid #8b5cf6' : '1px solid #f1f5f9',
+        borderRadius: '20px',
+        marginBottom: '20px',
         cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: isSelected ? '0 10px 25px -5px rgba(79, 70, 229, 0.2)' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: isSelected ? '0 12px 25px -5px rgba(99, 102, 241, 0.25)' : isHovered ? '0 8px 20px -5px rgba(139, 92, 246, 0.15)' : '0 4px 6px -1px rgba(0, 0, 0, 0.03)',
         overflow: 'hidden'
       }}
       className="venue-card-sidebar group"
@@ -457,16 +475,18 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
             {getVenueIcon(venue.types)}
           </div>
         )}
-        {/* Label Overlay - Sleek Circle */}
+        {/* Label Overlay - Sleek Badge */}
         <div style={{
-          position: 'absolute', top: '10px', right: '10px',
-          background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)',
-          color: 'white', width: '24px', height: '24px',
-          borderRadius: '50%', fontSize: '12px', fontWeight: 700,
+          position: 'absolute', top: '12px', left: '12px',
+          background: 'rgba(15, 23, 42, 0.8)',
+          backdropFilter: 'blur(8px)',
+          color: 'white', width: '28px', height: '28px',
+          borderRadius: '8px', fontSize: '14px', fontWeight: 800,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 10px rgba(79, 70, 229, 0.4)',
-          border: '1.5px solid rgba(255,255,255,0.8)',
-          zIndex: 3
+          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          zIndex: 3,
+          fontFamily: "'Outfit', sans-serif"
         }}>
           {String.fromCharCode(65 + index)}
         </div>
@@ -574,38 +594,48 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
 
         {/* Travel Times Grid */}
         <div style={{ 
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', 
-          padding: '12px 0', borderTop: '1px solid #f1f5f9'
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', 
+          padding: '16px 0', borderTop: '1px solid #f1f5f9'
         }}>
           {/* Person 1 */}
-          <div style={{ borderRight: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
+          <div style={{ borderRight: '1px solid #f1f5f9', paddingRight: '8px' }}>
+            <div style={{ 
+              display: 'inline-block', padding: '2px 8px', borderRadius: '6px',
+              background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1',
+              fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px',
+              letterSpacing: '0.05em'
+            }}>
               Person 1
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>
-                <span>🕒</span>
-                <span>{venue.travel_time_from_loc1_min || 0} min</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#0f172a', fontWeight: 700 }}>
+                <span style={{ fontSize: '16px' }}>🕒</span>
+                <span>{venue.travel_time_from_loc1_min || 0}m</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#94a3b8' }}>
-                <span>📍</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
+                <span style={{ color: '#94a3b8' }}>�️</span>
                 <span>{Number(venue.travel_distance_from_loc1_km || 0).toFixed(1)} km</span>
               </div>
             </div>
           </div>
 
           {/* Person 2 */}
-          <div>
-            <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>
+          <div style={{ paddingLeft: '4px' }}>
+            <div style={{ 
+              display: 'inline-block', padding: '2px 8px', borderRadius: '6px',
+              background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6',
+              fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px',
+              letterSpacing: '0.05em'
+            }}>
               Person 2
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>
-                <span>🕒</span>
-                <span>{venue.travel_time_from_loc2_min || 0} min</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#0f172a', fontWeight: 700 }}>
+                <span style={{ fontSize: '16px' }}>🕒</span>
+                <span>{venue.travel_time_from_loc2_min || 0}m</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#94a3b8' }}>
-                <span>📍</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
+                <span style={{ color: '#94a3b8' }}>�️</span>
                 <span>{Number(venue.travel_distance_from_loc2_km || 0).toFixed(1)} km</span>
               </div>
             </div>

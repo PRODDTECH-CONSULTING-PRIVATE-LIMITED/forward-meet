@@ -9,8 +9,8 @@ const TravelModeSelector = ({ selected, onSelect }) => {
   ];
 
   return (
-    <div className="space-y-3">
-      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+    <div className="space-y-4">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
         🚗 How will you travel?
       </label>
       <div className="venue-type-grid grid-cols-4">
@@ -26,11 +26,11 @@ const TravelModeSelector = ({ selected, onSelect }) => {
           </button>
         ))}
       </div>
-      {selected && (
+      {/* {selected && (
         <p className="text-xs text-slate-500">
           Selected: {modes.find(m => m.id === selected)?.label}
         </p>
-      )}
+      )} */}
     </div>
   );
 };

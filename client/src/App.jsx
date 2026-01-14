@@ -839,12 +839,12 @@ const initMap = async () => {
 
   return (
     <div
-      className="grid h-screen bg-gray-100"
-      style={{ gridTemplateColumns: "30% 70%" }}
+      className="grid h-screen bg-slate-50"
+      style={{ gridTemplateColumns: "minmax(450px, 30%) 1fr" }}
     >
       {/* LEFT PANEL: Search Form and Results Cards */}
-      <div className="min-w-[350px] max-w-full h-screen bg-white shadow-xl overflow-y-auto border-r">
-        <div className="p-6 w-full">
+      <div className="h-screen bg-white shadow-2xl overflow-y-auto border-r border-slate-100 relative z-10">
+        <div className="p-10 pb-24 w-full">
           {/* Header */}
           {/* <div className="text-center mb-6 w-full">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4">
@@ -919,62 +919,13 @@ const initMap = async () => {
 
           {showFilters && (
             <div
-              className={`transition-all duration-300 ${
+              className={`transition-all duration-300 flex flex-col gap-16 ${
                 showFilters
                   ? "opacity-100 max-h-[5000px]"
                   : "opacity-0 max-h-0 overflow-hidden"
               }`}
             >
-              {/* <form onSubmit={(e) => e.preventDefault()} className="space-y-4 w-full"> */}
-                {/* Location Inputs
-                <div className="space-y-4 w-full">
-                  <div className="w-full">
-                    <label
-                      htmlFor="location1"
-                      className="block text-gray-700 text-sm font-semibold mb-2"
-                    >
-                      <span className="flex items-center">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                        Starting Location
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      id="location1"
-                      ref={location1InputRef}
-                      className="w-full py-3 px-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent focus:bg-white transition-all duration-200"
-                      value={location1}
-                      onChange={(e) => setLocation1(e.target.value)}
-                      placeholder="e.g., Jayanagar, Bengaluru"
-                      autoComplete="off"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="location2"
-                      className="block text-gray-700 text-sm font-semibold mb-2"
-                    >
-                      <span className="flex items-center">
-                        <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                        Destination Location
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      id="location2"
-                      ref={location2InputRef}
-                      className="w-full py-3 px-4 text-gray-700 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white transition-all duration-200"
-                      value={location2}
-                      onChange={(e) => setLocation2(e.target.value)}
-                      placeholder="e.g., Indiranagar, Bengaluru"
-                      autoComplete="off"
-                      required
-                    />
-                  </div>
-                </div> */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-8">
                   <LocationSelector
                   location1={location1}
                   location2={location2}
@@ -1016,11 +967,10 @@ const initMap = async () => {
                 {/* Search Button */}
                 <button
                   type="submit"
-                  className="w-full mt-4 bg-gradient-to-br from-indigo-600 to-violet-700 hover:from-indigo-700 hover:to-violet-800 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 overflow-hidden group relative"
+                  className="w-full mt-14 primary-button py-5 px-8"
                   disabled={loading}
                   onClick={handleSearch}
                 >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                   {loading ? (
                     <>
                       <svg
@@ -1043,12 +993,12 @@ const initMap = async () => {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span className="relative z-10">Searching...</span>
+                      <span>Searching...</span>
                     </>
                   ) : (
                     <>
                       <svg
-                        className="w-5 h-5 relative z-10"
+                        className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -1060,7 +1010,7 @@ const initMap = async () => {
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                       </svg>
-                      <span className="relative z-10">Find Midway Places</span>
+                      <span>Find Midway Places</span>
                     </>
                   )}
                 </button>

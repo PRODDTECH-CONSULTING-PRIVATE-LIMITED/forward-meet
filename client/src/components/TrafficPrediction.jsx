@@ -7,10 +7,10 @@ const TrafficPrediction = (props) => {
 
     return (
         <div className="w-full">
-            <div className="flex gap-3 w-full">
+            <div className="flex gap-5 w-full">
                 {/* Date Picker */}
                 <div className="flex-1">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                         📅 Date
                     </label>
                     <DatePicker
@@ -36,7 +36,7 @@ const TrafficPrediction = (props) => {
 
                 {/* Time Picker */}
                 <div className="flex-1">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2 mb-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
                         🕐 Time
                     </label>
                     <TimePicker
