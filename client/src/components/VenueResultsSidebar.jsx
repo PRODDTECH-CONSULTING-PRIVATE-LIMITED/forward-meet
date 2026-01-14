@@ -287,13 +287,26 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
   const carouselRef = useRef(null);
   const cardRef = useRef(null);
   const isInternalScroll = useRef(false);
+  const isMouseOverCard = useRef(false);
 
   // Scroll into view when hovered from map
   useEffect(() => {
-    if (isHovered && cardRef.current) {
+    // Only scroll into view if the hover was NOT triggered by the mouse actually being over the card
+    // This prevents annoying jumps when the user is hovering results in the sidebar itself
+    if (isHovered && cardRef.current && !isMouseOverCard.current) {
       cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [isHovered]);
+
+  const handleMouseEnter = () => {
+    isMouseOverCard.current = true;
+    onHover();
+  };
+
+  const handleMouseLeave = () => {
+    isMouseOverCard.current = false;
+    onLeave();
+  };
 
   const getVenueIcon = (types) => {
     if (!types) return '📍';
@@ -344,8 +357,8 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
   return (
     <div
       ref={cardRef}
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       onClick={onClick}
       style={{
         background: isSelected || isHovered ? '#f0f9ff' : 'white',
