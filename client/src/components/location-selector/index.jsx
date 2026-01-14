@@ -134,8 +134,8 @@ const LocationSelector = ({
 
   return (
     <div className="space-y-4 w-full">
-      <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
-        📍 Meeting Participants
+      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4 ml-0.5">
+        Participants
       </label>
       
       <ParticipantCard

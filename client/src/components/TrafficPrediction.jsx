@@ -7,6 +7,9 @@ const TrafficPrediction = (props) => {
 
     return (
         <div className="w-full" style={{ marginTop: '24px' }}>
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4 ml-0.5">
+                Timing
+            </label>
             <div className="flex w-full" style={{ gap: '16px', marginBottom: '4px' }}>
                 {/* Date Selection Card */}
                 <div 
@@ -86,13 +89,11 @@ const TrafficPrediction = (props) => {
             </div>
 
             {/* Info Section */}
-            <div className="mt-5 flex items-center gap-3 px-1.5 opacity-80 group/info">
-                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center transition-colors group-hover/info:bg-indigo-50">
-                    <InfoCircleOutlined style={{ fontSize: '13px', color: '#475569' }} />
-                </div>
+            <div className="mt-4 flex items-center gap-2 px-1 opacity-70">
+                <InfoCircleOutlined style={{ fontSize: '13px', color: '#64748b' }} />
                 <p 
-                    className="font-semibold text-slate-500 tracking-tight leading-tight"
-                    style={{ fontSize: '12.5px' }}
+                    className="font-medium text-slate-500 tracking-tight"
+                    style={{ fontSize: '12px' }}
                 >
                     Finds venues with equal travel time for everyone.
                 </p>

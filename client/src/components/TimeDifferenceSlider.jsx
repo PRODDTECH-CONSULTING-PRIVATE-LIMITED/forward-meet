@@ -6,24 +6,24 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
   const sliderBackground = `linear-gradient(to right, #4F46E5 0%, #4F46E5 ${percentage}%, #E2E8F0 ${percentage}%, #E2E8F0 100%)`;
 
   return (
-    <div style={{ marginTop: '14px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">
-          ⏱️ Time Margin
-        </label>
-        <div style={{ 
-          fontSize: '13px', 
-          fontWeight: 700, 
-          color: '#4F46E5',
-          background: 'rgba(79, 70, 229, 0.1)',
-          padding: '2px 8px',
-          borderRadius: '6px'
-        }}>
-          {value} min
+    <div style={{ marginTop: '12px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">⏱️ Time Margin</span>
+          <div style={{ 
+            fontSize: '11px', 
+            fontWeight: 700, 
+            color: '#4F46E5',
+            background: 'rgba(79, 70, 229, 0.08)',
+            padding: '1px 6px',
+            borderRadius: '4px'
+          }}>
+            {value} min
+          </div>
         </div>
       </div>
       
-      <div className="radius-slider-container">
+      <div style={{ padding: '4px 0 8px' }}>
         <input
           type="range"
           min={min}
@@ -31,19 +31,25 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="radius-slider"
-          style={{ background: sliderBackground, height: '4px' }}
+          style={{ background: sliderBackground, height: '4px', margin: 0 }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#94a3b8', marginTop: '6px', fontWeight: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '9px', color: '#94a3b8', marginTop: '4px', fontWeight: 600 }}>
           <span>{min}m</span>
           <span>{max}m</span>
         </div>
       </div>
-      <p className="text-xs text-slate-500 flex items-start gap-2">
-        <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" width="16" height="16">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" />
+      
+      <div className="flex items-center gap-1.5 opacity-70">
+        <svg 
+          style={{ width: '14px', height: '14px' }} 
+          className="text-slate-400" 
+          fill="currentColor" 
+          viewBox="0 0 20 20"
+        >
+          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
         </svg>
-        <span>Maximum acceptable travel time difference between both people is {value} minutes</span>
-      </p>
+        <span className="text-[10px] text-slate-500 font-medium">Max difference in travel time between people</span>
+      </div>
     </div>
   );
 };
