@@ -840,11 +840,11 @@ const initMap = async () => {
   return (
     <div
       className="grid h-screen bg-slate-50"
-      style={{ gridTemplateColumns: "minmax(450px, 30%) 1fr" }}
+      style={{ gridTemplateColumns: "minmax(480px, 30%) 1fr" }}
     >
       {/* LEFT PANEL: Search Form and Results Cards */}
       <div className="h-screen bg-white shadow-2xl overflow-y-auto border-r border-slate-100 relative z-10">
-        <div className="p-10 pb-24 w-full">
+        <div className="px-12 py-10 pb-32 w-full" style={{padding: "0 10px 20px"}}>
           {/* Header */}
           {/* <div className="text-center mb-6 w-full">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4">

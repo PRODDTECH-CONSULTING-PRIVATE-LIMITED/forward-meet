@@ -176,7 +176,7 @@ const VenueResultsSidebar = ({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '12px'
+            padding: '24px 20px'
           }}
         >
           {loading ? (

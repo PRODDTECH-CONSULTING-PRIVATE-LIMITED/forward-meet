@@ -10,11 +10,11 @@ const VenueTypeSelector = ({ selected, onSelect }) => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
         🍽️ What type of venue?
       </label>
-      <div className="venue-type-grid">
+      <div className="venue-type-grid mb-6">
         {venueTypes.map((type) => (
           <button
             key={type.id}

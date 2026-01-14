@@ -9,7 +9,7 @@ const TravelModeSelector = ({ selected, onSelect }) => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4">
         🚗 How will you travel?
       </label>
