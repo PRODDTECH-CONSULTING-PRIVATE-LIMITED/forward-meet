@@ -10,6 +10,7 @@ import ParticipantCard from "./components/ParticipantCard";
 import VenueTypeSelector from "./components/VenueTypeSelector";
 import SegmentedControl from "./components/SegmentedControl";
 import SearchRadiusSlider from "./components/SearchRadiusSlider";
+import TimeDifferenceSlider from "./components/TimeDifferenceSlider";
 import TravelModeSelector from "./components/TravelModeSelector";
 import VenueResultsSidebar from "./components/VenueResultsSidebar";
 
@@ -28,6 +29,7 @@ const App = (props) => {
   const [invitationError, setInvitationError] = useState("");
   const [searchMode, setSearchMode] = useState("time");
   const [searchRadius, setSearchRadius] = useState(7);
+  const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(10);
   const [userLocation, setUserLocation] = useState(null);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -70,6 +72,9 @@ const App = (props) => {
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [hoveredVenueId, setHoveredVenueId] = useState(null);
+  
+  // Track initial mount to avoid triggering search on first render
+  const isInitialMount = useRef(true);
 
   // Check for library loading
   useEffect(() => {
@@ -140,6 +145,24 @@ const App = (props) => {
       }
     }
   }, [userLocation, mapsLoaded]);
+
+  // Auto-trigger search when searchMode, searchRadius, or timeDifferenceMargin changes
+  useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Only trigger if we have valid locations
+    const hasValidLocations = (location1 || location1InputRef.current?.value) && 
+                               (location2 || location2InputRef.current?.value);
+    
+    if (hasValidLocations && !loading) {
+      // Trigger search with the new parameters
+      handleSearch({ preventDefault: () => {} });
+    }
+  }, [searchMode, searchRadius, timeDifferenceMargin]); // Watch all filter changes
 
 const cleanMapStyles = [
   { featureType: "poi", stylers: [{ visibility: "off" }] },
@@ -654,6 +677,23 @@ const initMap = async () => {
     }
 
     try {
+      // Build the request payload conditionally based on searchMode
+      const requestPayload = {
+        location1: location1InputRef.current?.value || location1,
+        location2: location2InputRef.current?.value || location2,
+        searchMode,
+        travelMode,
+        departureTime,
+        placeType,
+      };
+
+      // Add the appropriate parameter based on searchMode
+      if (searchMode === 'time') {
+        requestPayload.timeDifferenceMargin = timeDifferenceMargin;
+      } else {
+        requestPayload.searchRadius = searchRadius;
+      }
+
       const response = await fetch(
         "http://localhost:8080/api/find_midway_restaurant",
         {
@@ -661,15 +701,7 @@ const initMap = async () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            location1: location1InputRef.current?.value || location1,
-            location2: location2InputRef.current?.value || location2,
-            searchMode,
-            searchRadius,
-            travelMode,
-            departureTime,
-            placeType,
-          }),
+          body: JSON.stringify(requestPayload),
         }
       );
 
@@ -974,24 +1006,6 @@ const initMap = async () => {
                   onSelect={setPlaceType}
                 />
 
-                {/* Search Mode - Segmented Control */}
-                <SegmentedControl
-                  options={[
-                    { value: 'time', label: 'Time', icon: '⏱️' },
-                    { value: 'distance', label: 'Distance', icon: '📏' }
-                  ]}
-                  selected={searchMode}
-                  onChange={setSearchMode}
-                />
-
-                {/* Search Radius */}
-                <SearchRadiusSlider
-                  value={searchRadius}
-                  onChange={setSearchRadius}
-                  min={1}
-                  max={50}
-                />
-
                 {/* Search Button */}
                 <button
                   type="submit"
@@ -1242,6 +1256,12 @@ const initMap = async () => {
             totalResults={midwayRestaurants.length}
             hoveredVenueId={hoveredVenueId}
             itemsPerPage={itemsPerPage}
+            searchMode={searchMode}
+            onSearchModeChange={setSearchMode}
+            searchRadius={searchRadius}
+            onSearchRadiusChange={setSearchRadius}
+            timeDifferenceMargin={timeDifferenceMargin}
+            onTimeDifferenceMarginChange={setTimeDifferenceMargin}
           />
         )}
         

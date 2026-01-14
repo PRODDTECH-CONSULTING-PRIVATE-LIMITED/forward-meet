@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import SegmentedControl from './SegmentedControl';
+import SearchRadiusSlider from './SearchRadiusSlider';
+import TimeDifferenceSlider from './TimeDifferenceSlider';
 
 const VenueResultsSidebar = ({ 
   venues, 
@@ -13,7 +16,14 @@ const VenueResultsSidebar = ({
   onPageChange,
   totalResults,
   hoveredVenueId,
-  itemsPerPage
+  itemsPerPage,
+  // Filter controls
+  searchMode,
+  onSearchModeChange,
+  searchRadius,
+  onSearchRadiusChange,
+  timeDifferenceMargin,
+  onTimeDifferenceMarginChange
 }) => {
   return (
     <>
@@ -89,6 +99,40 @@ const VenueResultsSidebar = ({
           <p style={{ margin: 0, fontSize: '13px', opacity: 0.9 }}>
             Hover to preview on map
           </p>
+        </div>
+
+        {/* Filter Controls */}
+        <div style={{
+          padding: '16px',
+          borderBottom: '1px solid #e2e8f0',
+          background: '#f8fafc'
+        }}>
+          <SegmentedControl
+            options={[
+              { value: 'time', label: 'Time', icon: '⏱️' },
+              { value: 'distance', label: 'Distance', icon: '📏' }
+            ]}
+            selected={searchMode}
+            onChange={onSearchModeChange}
+          />
+          
+          <div style={{ marginTop: '12px' }}>
+            {searchMode === 'time' ? (
+              <TimeDifferenceSlider
+                value={timeDifferenceMargin}
+                onChange={onTimeDifferenceMarginChange}
+                min={0}
+                max={30}
+              />
+            ) : (
+              <SearchRadiusSlider
+                value={searchRadius}
+                onChange={onSearchRadiusChange}
+                min={1}
+                max={50}
+              />
+            )}
+          </div>
         </div>
 
         {/* Venue List */}
@@ -429,8 +473,12 @@ const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onCl
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                   <img 
-                    src={review.profile_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name)}&background=random`} 
+                    src={review.profile_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name)}&background=667eea&color=fff`} 
                     alt={review.author_name}
+                    onError={(e) => {
+                      e.target.onerror = null; // Prevent infinite loop
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name)}&background=667eea&color=fff`;
+                    }}
                     style={{ width: '18px', height: '18px', borderRadius: '50%' }}
                   />
                   <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

@@ -201,6 +201,7 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
     location2,
     searchMode,
     searchRadius,
+    timeDifferenceMargin,
     travelMode,
     departureTime,
     placeType,
@@ -215,6 +216,15 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
 
   if (!location1 || !location2) {
     return res.status(400).json({ error: "Please provide both locations." });
+  }
+
+  // Validate that the correct parameter is provided based on searchMode
+  if (searchMode === 'time' && timeDifferenceMargin === undefined) {
+    return res.status(400).json({ error: "timeDifferenceMargin is required when searchMode is 'time'." });
+  }
+  
+  if (searchMode === 'distance' && searchRadius === undefined) {
+    return res.status(400).json({ error: "searchRadius is required when searchMode is 'distance'." });
   }
 
   try {
@@ -235,8 +245,11 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
       lng: (loc1Coords.lng + loc2Coords.lng) / 2,
     };
 
-    // Convert searchRadius from km to meters for Places API
-    const searchRadiusMeters = searchRadius * 1000;
+    // Determine search radius based on mode
+    // For distance mode: use the provided searchRadius
+    // For time mode: use a larger default radius (20km) since we'll filter by time difference
+    let radiusInKm = searchMode === 'distance' ? searchRadius : 20;
+    const searchRadiusMeters = radiusInKm * 1000;
 
     // 3. Find places near the midpoint
     const places = await findPlacesNearMidpoint(
@@ -300,26 +313,40 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
       })
     );
 
-    // Sort the restaurants based on the selected search mode
+    // Filter restaurants based on margin constraints
+    let filteredRestaurants = restaurantsWithDetails;
+    
+    if (searchMode === "time" && timeDifferenceMargin !== undefined) {
+      // Filter by time difference margin (in minutes)
+      filteredRestaurants = restaurantsWithDetails.filter(
+        (restaurant) => restaurant.time_difference_min <= timeDifferenceMargin
+      );
+    } else if (searchMode === "distance" && searchRadius !== undefined) {
+      // For distance mode, searchRadius is already applied in the initial search
+      // But we can also filter by distance difference if needed
+      // filteredRestaurants = restaurantsWithDetails; // No additional filtering needed
+    }
+
+    // Sort the filtered restaurants based on the selected search mode
     if (searchMode === "time") {
-      restaurantsWithDetails.sort(
+      filteredRestaurants.sort(
         (a, b) => a.time_difference_min - b.time_difference_min
       );
     } else {
       // Default to distance if searchMode is 'distance' or any other value
-      restaurantsWithDetails.sort(
+      filteredRestaurants.sort(
         (a, b) => a.distance_difference_km - b.distance_difference_km
       );
     }
 
-    if (restaurantsWithDetails.length === 0) {
+    if (filteredRestaurants.length === 0) {
       return res.status(404).json({
         error:
           "No suitable places found with travel details. Try adjusting the search radius or criteria.",
       });
     }
 
-    res.json(restaurantsWithDetails);
+    res.json(filteredRestaurants);
   } catch (error) {
     console.error("Error in find_midway_restaurant:", error);
     res.status(500).json({ error: "An internal server error occurred." });
