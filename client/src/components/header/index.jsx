@@ -33,7 +33,7 @@ const Header = () => {
       <p className="text-slate-500 text-base font-semibold leading-relaxed max-w-[300px] mx-auto mb-8">
         Discover the perfect venue exactly in the middle.
       </p>
-      {/* 1<div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 rounded-full border border-indigo-100/50 backdrop-blur-sm">
+      {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 rounded-full border border-indigo-100/50 backdrop-blur-sm">
         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
         <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Predictive Sync Active</span>
       </div> */}
