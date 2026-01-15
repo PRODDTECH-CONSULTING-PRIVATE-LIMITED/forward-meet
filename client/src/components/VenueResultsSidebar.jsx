@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import SegmentedControl from './SegmentedControl';
 import SearchRadiusSlider from './SearchRadiusSlider';
 import TimeDifferenceSlider from './TimeDifferenceSlider';
@@ -145,8 +145,8 @@ const VenueResultsSidebar = ({
             selected={searchMode}
             onChange={onSearchModeChange}
           />
-          
-          <div style={{ marginTop: '8px' }}>
+
+          <div style={{ marginTop: '0px' }}>
             {searchMode === 'time' ? (
               <TimeDifferenceSlider
                 value={timeDifferenceMargin}
@@ -162,6 +162,24 @@ const VenueResultsSidebar = ({
                 max={10}
               />
             )}
+          </div>
+
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px', 
+            marginTop: '12px',
+            color: '#64748b',
+            fontSize: '11px',
+            paddingLeft: '4px',
+            paddingBottom: '4px'
+          }}>
+            <Info size={14} style={{ flexShrink: 0, opacity: 0.8 }} />
+            <span style={{ fontWeight: 500 }}>
+              {searchMode === 'time' 
+                ? "Max difference in travel time between people" 
+                : "Radius around the midpoint"}
+            </span>
           </div>
         </div>
 

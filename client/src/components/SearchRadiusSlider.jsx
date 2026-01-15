@@ -6,7 +6,6 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
   const sliderBackground = `linear-gradient(to right, #4F46E5 0%, #4F46E5 ${percentage}%, #E2E8F0 ${percentage}%, #E2E8F0 100%)`;
 
   return (
-    <>
     <div style={{ marginTop: '0', display: 'flex', alignItems: 'center', gap: '12px', height: '32px', position: 'relative' }}>
       <span style={{ 
         fontSize: '10px', 
@@ -65,17 +64,6 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
         {value} km
       </div>
     </div>
-      <span style={{ 
-            fontSize: '10px', 
-            color: '#64748b', 
-            fontWeight: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis'
-          }}>
-            Radius around the midpoint
-          </span>
-    </>
   );
 };
 
