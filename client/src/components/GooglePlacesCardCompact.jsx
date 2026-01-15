@@ -1708,99 +1708,90 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Reviewer Info */}
+                {/* Reviewer Info - Float-based layout */}
                 <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  marginBottom: "6px",
+                  position: "relative",
+                  maxHeight: "45px", // 3 lines * 15px line-height
+                  overflow: "hidden",
+                  fontSize: "11px",
+                  lineHeight: "15px",
+                  color: "#3c4043",
+                  fontStyle: "italic",
                 }}>
-                  {review.profile_photo_url ? (
-                    <img
-                      src={review.profile_photo_url}
-                      alt={review.author_name}
-                      style={{
-                        width: "24px",
-                        height: "24px",
-                        borderRadius: "50%",
-                        flexShrink: 0,
-                        objectFit: "cover",
-                        backgroundColor: "#e8eaed",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
-                      }}
-                    />
-                  ) : null}
-                  {/* Fallback Avatar */}
+                  {/* Avatar - Floated to create text flow */}
                   <div style={{
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    backgroundColor: "#e8eaed",
-                    display: review.profile_photo_url ? "none" : "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    fontSize: "12px",
-                    color: "#5f6368",
-                    fontWeight: "500",
+                    float: "left",
+                    marginRight: "6px",
+                    marginTop: "0",
+                    marginBottom: "-2px", // Ensure it clears the first line exactly
+                    lineHeight: 0,
+                    fontStyle: "normal", // Keep avatar fallback character normal
                   }}>
-                    {review.author_name?.charAt(0)?.toUpperCase() || "?"}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {review.profile_photo_url ? (
+                      <img
+                        src={review.profile_photo_url}
+                        alt={review.author_name}
+                        style={{
+                          width: "16px",
+                          height: "16px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          backgroundColor: "#e8eaed",
+                          display: "block",
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    {/* Fallback Avatar */}
                     <div style={{
-                      fontSize: "12px",
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "50%",
+                      backgroundColor: "#e8eaed",
+                      display: review.profile_photo_url ? "none" : "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "9px",
+                      color: "#5f6368",
                       fontWeight: "500",
-                      color: "#202124",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
                     }}>
-                      {review.author_name}
+                      {review.author_name?.charAt(0)?.toUpperCase() || "?"}
                     </div>
                   </div>
-                </div>
-
-                {/* Rating */}
-                {/* <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "2px",
-                  marginBottom: "6px",
-                }}>
-                  {[...Array(5)].map((_, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        color: i < review.rating ? "#fbbc04" : "#e8eaed",
-                        fontSize: "12px",
-                      }}
-                    >
-                      ★
-                    </span>
-                  ))}
                   <span style={{
-                    fontSize: "11px",
-                    color: "#70757a",
-                    marginLeft: "4px",
+                    fontWeight: "500",
+                    color: "#202124",
+                    fontStyle: "normal",
                   }}>
-                    {review.relative_time_description}
-                  </span>
-                </div> */}
-
-                {/* Review Text */}
-                <div style={{
-                  fontSize: "12px",
-                  color: "#3c4043",
-                  lineHeight: "16px",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}>
+                    {review.author_name?.split(' ')[0] || review.author_name}:
+                  </span>{" "}
                   {review.text}
+
+                  {/* Ellipsis overlay */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: "40px",
+                    height: "15px",
+                    background: "linear-gradient(to right, rgba(248, 249, 250, 0) 0%, #f8f9fa 50%)",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    pointerEvents: "none",
+                  }}>
+                    <span style={{ 
+                      fontSize: "11px", 
+                      color: "#3c4043", 
+                      paddingRight: "2px",
+                      fontStyle: "italic",
+                      backgroundColor: "#f8f9fa",
+                      boxShadow: "-5px 0 5px #f8f9fa"
+                    }}>...</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -2023,9 +2014,9 @@ export default GooglePlacesCardCompact;
   //           </div>
   //           {/* Summary text */}
   //           <div style={{
-  //             fontSize: "12px",
+  //             fontSize: "11px",
   //             color: "#3c4043",
-  //             lineHeight: "18px",
+  //             lineHeight: "16px",
   //             fontStyle: "italic",
   //           }}>
   //             {locationInfo.review_summary}
