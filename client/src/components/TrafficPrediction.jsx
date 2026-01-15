@@ -95,7 +95,7 @@ const TrafficPrediction = (props) => {
                     className="font-medium text-slate-500 tracking-tight"
                     style={{ fontSize: '12px' }}
                 >
-                    Finds venues with equal travel time for everyone.
+                   {" "}Using predictive traffic modeling to ensure accurate travel time
                 </p>
             </div>
 
