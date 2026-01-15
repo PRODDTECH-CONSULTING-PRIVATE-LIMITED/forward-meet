@@ -6,46 +6,23 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
   const sliderBackground = `linear-gradient(to right, #4F46E5 0%, #4F46E5 ${percentage}%, #E2E8F0 ${percentage}%, #E2E8F0 100%)`;
 
   return (
-    <div style={{ marginTop: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0, flex: 1, marginRight: '8px' }}>
-          <span style={{ 
-            fontSize: '10px', 
-            fontWeight: 700, 
-            color: '#1a1a1a', 
-            textTransform: 'uppercase', 
-            letterSpacing: '0.04em',
-            whiteSpace: 'nowrap'
-          }}>
-            Time Margin
-          </span>
-          <span style={{ color: '#E5E7EB', fontWeight: 400, fontSize: '10px' }}>•</span>
-          <span style={{ 
-            fontSize: '10px', 
-            color: '#64748b', 
-            fontWeight: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            Max difference in travel time between people
-          </span>
-        </div>
-        <div style={{ 
-          fontSize: '10px', 
-          fontWeight: 700, 
-          color: '#6366f1',
-          background: '#EEF2FF',
-          padding: '1px 6px',
-          borderRadius: '4px',
-          whiteSpace: 'nowrap',
-          flexShrink: 0
-        }}>
-          {value} min
-        </div>
-      </div>
+    <>
+    <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '32px' }}>
+      <span style={{ 
+        fontSize: '10px', 
+        fontWeight: 700, 
+        color: '#1a1a1a', 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.04em',
+        whiteSpace: 'nowrap',
+        minWidth: '95px',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        Time Margin
+      </span>
       
-      <div style={{ padding: '0 0 2px' }}>
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', paddingBottom: '14px' }}>
         <input
           type="range"
           min={min}
@@ -53,14 +30,52 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="radius-slider"
-          style={{ background: sliderBackground, height: '3px', margin: 0 }}
+          style={{ background: sliderBackground, height: '3px', margin: 0, width: '100%', display: 'block' }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#94a3b8', marginTop: '3px', fontWeight: 600 }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: '20px', 
+          left: 0, 
+          right: 0, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          fontSize: '9px', 
+          color: '#94a3b8', 
+          fontWeight: 600,
+          pointerEvents: 'none'
+        }}>
           <span>{min}m</span>
           <span>{max}m</span>
         </div>
       </div>
+
+      <div style={{ 
+        fontSize: '10px', 
+        fontWeight: 700, 
+        color: '#6366f1',
+        background: '#EEF2FF',
+        padding: '2px 8px',
+        borderRadius: '4px',
+        whiteSpace: 'nowrap',
+        minWidth: '45px',
+        textAlign: 'center',
+        flexShrink: 0
+      }}>
+        {value} min
+      </div>
     </div>
+     <span style={{ 
+            fontSize: '10px', 
+            color: '#64748b', 
+            fontWeight: 400,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis'
+          }}>
+            Max difference in travel time between people
+          </span>
+    </>
+    
   );
 };
 

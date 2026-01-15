@@ -6,46 +6,23 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
   const sliderBackground = `linear-gradient(to right, #4F46E5 0%, #4F46E5 ${percentage}%, #E2E8F0 ${percentage}%, #E2E8F0 100%)`;
 
   return (
-    <div style={{ marginTop: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0, flex: 1, marginRight: '8px' }}>
-          <span style={{ 
-            fontSize: '10px', 
-            fontWeight: 700, 
-            color: '#1a1a1a', 
-            textTransform: 'uppercase', 
-            letterSpacing: '0.04em',
-            whiteSpace: 'nowrap'
-          }}>
-            Search Radius
-          </span>
-          <span style={{ color: '#E5E7EB', fontWeight: 400, fontSize: '10px' }}>•</span>
-          <span style={{ 
-            fontSize: '10px', 
-            color: '#64748b', 
-            fontWeight: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            Radius around the midpoint
-          </span>
-        </div>
-        <div style={{ 
-          fontSize: '10px', 
-          fontWeight: 700, 
-          color: '#6366f1',
-          background: '#EEF2FF',
-          padding: '1px 6px',
-          borderRadius: '4px',
-          whiteSpace: 'nowrap',
-          flexShrink: 0
-        }}>
-          {value} km
-        </div>
-      </div>
-
-      <div style={{ padding: '0 0 2px' }}>
+    <>
+    <div style={{ marginTop: '0', display: 'flex', alignItems: 'center', gap: '12px', height: '36px', position: 'relative' }}>
+      <span style={{ 
+        fontSize: '10px', 
+        fontWeight: 700, 
+        color: '#1a1a1a', 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.04em',
+        whiteSpace: 'nowrap',
+        minWidth: '95px',
+        display: 'flex',
+        alignItems: 'center'
+      }}>
+        Search Radius
+      </span>
+      
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', height: '100%' }}>
         <input
           type="range"
           min={min}
@@ -53,14 +30,56 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="radius-slider"
-          style={{ background: sliderBackground, height: '3px', margin: 0 }}
+          style={{ background: sliderBackground, height: '3px', margin: 0, width: '100%', display: 'block' }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#94a3b8', marginTop: '3px', fontWeight: 600 }}>
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '-2px', 
+          left: 0, 
+          right: 0, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          fontSize: '9px', 
+          color: '#94a3b8', 
+          fontWeight: 600,
+          pointerEvents: 'none',
+          lineHeight: '1'
+        }}>
           <span>{min}km</span>
           <span>{max}km</span>
         </div>
       </div>
+
+      <div style={{ 
+        fontSize: '10px', 
+        fontWeight: 700, 
+        color: '#6366f1',
+        background: '#EEF2FF',
+        padding: '2px 8px',
+        borderRadius: '4px',
+        whiteSpace: 'nowrap',
+        minWidth: '45px',
+        textAlign: 'center',
+        flexShrink: 0,
+        height: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {value} km
+      </div>
     </div>
+      <span style={{ 
+            fontSize: '10px', 
+            color: '#64748b', 
+            fontWeight: 400,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis'
+          }}>
+            Radius around the midpoint
+          </span>
+    </>
   );
 };
 
