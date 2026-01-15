@@ -22,7 +22,15 @@ app.use(express.json()); // Enable parsing of JSON request bodies
 // These keys are for the BACKEND (Geocoding, Places, Directions, and Gemini APIs)
 // Keep these keys secure and do not expose them in your client code.
 const Maps_API_KEY = process.env.VITE_GOOGLE_MAPS_API_KEY;
-const GEMINI_API_KEY = ""; // Leave this empty, Canvas will inject the key for Gemini API calls
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""; // Gemini API key from environment variables
+
+// Debug: Check if Gemini API key is loaded
+if (GEMINI_API_KEY) {
+  console.log('✅ Gemini API key loaded successfully (length:', GEMINI_API_KEY.length, 'characters)');
+} else {
+  console.warn('⚠️  WARNING: Gemini API key is not set! Review summaries will not work.');
+  console.warn('   Please add GEMINI_API_KEY to your .env file');
+}
 
 // --- Helper Functions ---
 
@@ -157,6 +165,12 @@ async function getPlaceDetails(placeId) {
         ? details.photos.map((photo) => photo.photo_reference)
         : [];
 
+      // Generate review summary if reviews are available
+      let review_summary = null;
+      if (details.reviews && details.reviews.length > 0) {
+        review_summary = await generateReviewSummary(details.reviews);
+      }
+
       return {
         place_id: placeId,
         name: details.name,
@@ -176,6 +190,7 @@ async function getPlaceDetails(placeId) {
         serves_vegan_food: details.serves_vegan_food || false,
         serves_gluten_free_food: details.serves_gluten_free_food || false,
         reviews: details.reviews || [],
+        review_summary: review_summary, // AI-generated summary
       };
     } else {
       console.error(
@@ -189,6 +204,75 @@ async function getPlaceDetails(placeId) {
     console.error("Error fetching place details:", error.message);
     return null;
   }
+}
+
+/**
+ * Generates a concise summary of reviews using Gemini API.
+ * @param {Array} reviews - Array of review objects from Google Places API.
+ * @returns {Promise<string|null>} - A promise that resolves to a summary string or null.
+ */
+async function generateReviewSummary(reviews) {
+  if (!reviews || reviews.length === 0) {
+    return null;
+  }
+
+  // Temporarily disabled due to API model compatibility issues
+  // The Gemini API models are not accessible with the current API key configuration
+  console.warn('⚠️  Review summary generation is temporarily disabled');
+  console.warn('   To enable: Verify your Gemini API key has access to the required models');
+  console.warn('   Visit: https://ai.google.dev/gemini-api/docs/models/gemini');
+  return null;
+
+  /* Original implementation - uncomment when API access is resolved
+  const topReviews = reviews
+    .slice(0, 5)
+    .map(r => `Rating: ${r.rating}/5 - "${r.text}"`)
+    .join('\n');
+
+  const prompt = `Based on these customer reviews for a venue, write a concise 2-3 sentence summary highlighting the key themes, strengths, and any notable concerns. Be objective and balanced.
+
+Reviews:
+${topReviews}
+
+Summary:`;
+
+  // Using v1 API with gemini-1.5-flash-latest for better compatibility
+  const geminiApiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
+  const payload = {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  };
+
+  try {
+    console.log('🤖 Generating review summary for', reviews.length, 'reviews...');
+    const geminiResponse = await axios.post(geminiApiUrl, payload, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (
+      geminiResponse.data.candidates &&
+      geminiResponse.data.candidates[0] &&
+      geminiResponse.data.candidates[0].content &&
+      geminiResponse.data.candidates[0].content.parts &&
+      geminiResponse.data.candidates[0].content.parts[0] &&
+      geminiResponse.data.candidates[0].content.parts[0].text
+    ) {
+      const summary = geminiResponse.data.candidates[0].content.parts[0].text.trim();
+      console.log('✅ Review summary generated successfully');
+      return summary;
+    } else {
+      console.error('Unexpected Gemini API response structure:', JSON.stringify(geminiResponse.data, null, 2));
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error generating review summary:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+    }
+    return null;
+  }
+  */
 }
 
 // --- Routes ---
