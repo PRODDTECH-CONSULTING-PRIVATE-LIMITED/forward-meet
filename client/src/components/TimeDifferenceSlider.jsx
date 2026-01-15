@@ -55,7 +55,7 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           className="radius-slider"
           style={{ background: sliderBackground, height: '3px', margin: 0 }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '8px', color: '#94a3b8', marginTop: '2px', fontWeight: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '10px', color: '#94a3b8', marginTop: '3px', fontWeight: 600 }}>
           <span>{min}m</span>
           <span>{max}m</span>
         </div>
