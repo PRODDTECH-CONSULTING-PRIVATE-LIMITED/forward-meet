@@ -1805,7 +1805,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
       <div style={{
         display: "flex",
         gap: "6px",
-        padding: "6px 12px 12px 12px",
+        padding: "6px 12px 0px 12px",
         borderTop: "1px solid #e8eaed",
         overflowX: "auto",
       }}
@@ -1877,20 +1877,47 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
       </div>
 
       {/* Action Buttons - Separate Row */}
-      <div style={{
-        display: "flex",
-        gap: "6px",
-        padding: "0 12px 12px 12px",
-        overflowX: "auto",
-      }}
-      className="hide-scrollbar"
-      >
-        <ActionButton icon="🧭" label="Directions" />
-        <ActionButton icon="🚕" label="Book Cab" />
-        <ActionButton icon="📅" label="Reserve" />
-        <ActionButton icon="📋" label="Menu" />
-        <ActionButton icon="📞" label="Call" />
-        <ActionButton icon="↗" label="Share" />
+      <div style={{ position: "relative" }}>
+        {/* Left Fade Overlay */}
+        <div style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: "12px",
+          width: "24px",
+          background: "linear-gradient(to right, #FFFFFF 20%, rgba(255, 255, 255, 0) 100%)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }} />
+
+        <div style={{
+          display: "flex",
+          gap: "6px",
+          padding: "4px 12px 12px 12px",
+          overflowX: "auto",
+          position: "relative",
+        }}
+        className="hide-scrollbar"
+        >
+          <ActionButton icon="🧭" label="Directions" />
+          <ActionButton icon="🚕" label="Book Cab" />
+          <ActionButton icon="📅" label="Reserve" />
+          <ActionButton icon="📋" label="Menu" />
+          <ActionButton icon="📞" label="Call" />
+          <ActionButton icon="↗" label="Share" />
+        </div>
+
+        {/* Right Fade Overlay */}
+        <div style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          bottom: "12px",
+          width: "24px",
+          background: "linear-gradient(to left, #FFFFFF 20%, rgba(255, 255, 255, 0) 100%)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }} />
       </div>
 
       {/* Styles */}
@@ -1916,19 +1943,28 @@ const ActionButton = ({ icon, label }) => (
       gap: "4px",
       padding: "6px 12px",
       backgroundColor: "#e8f0fe",
-      border: "none",
+      border: "2px solid transparent",
       borderRadius: "16px",
       fontSize: "12px",
-      fontWeight: "500",
+      fontWeight: "600",
       color: "#1a73e8",
       cursor: "pointer",
       whiteSpace: "nowrap",
-      transition: "background-color 0.2s ease",
+      transition: "all 0.2s ease",
+      outline: "none",
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.backgroundColor = "#d2e3fc";
     }}
     onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#e8f0fe";
+    }}
+    onFocus={(e) => {
+      e.currentTarget.style.borderColor = "#1a73e8";
+      e.currentTarget.style.backgroundColor = "#d2e3fc";
+    }}
+    onBlur={(e) => {
+      e.currentTarget.style.borderColor = "transparent";
       e.currentTarget.style.backgroundColor = "#e8f0fe";
     }}
     onClick={(e) => {
