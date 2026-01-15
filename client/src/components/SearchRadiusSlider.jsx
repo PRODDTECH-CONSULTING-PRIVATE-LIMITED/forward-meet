@@ -8,13 +8,28 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 50 }) => {
   return (
     <div style={{ marginTop: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
+          <span style={{ 
+            fontSize: '12px', 
+            fontWeight: 700, 
+            color: '#334155', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.025em',
+            whiteSpace: 'nowrap',
+            flexShrink: 0 
+          }}>
             📍 Search Radius
           </span>
-          <span className="text-slate-300 flex-shrink-0">•</span>
-          <span className="text-[9px] text-slate-500 font-medium whitespace-nowrap truncate">
-            Around midpoint
+          <span style={{ color: '#cbd5e1', flexShrink: 0 }}>•</span>
+          <span style={{ 
+            fontSize: '12px', 
+            fontWeight: 500, 
+            color: '#64748b', 
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            Radius around midpoint
           </span>
         </div>
         <div style={{ 
