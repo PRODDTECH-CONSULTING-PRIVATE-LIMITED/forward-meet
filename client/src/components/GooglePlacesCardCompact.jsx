@@ -1452,8 +1452,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
   const [photoUris, setPhotoUris] = useState([]);
   const [photosLoading, setPhotosLoading] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-  const [reviews, setReviews] = useState([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [placeData, setPlaceData] = useState(null);
 
   const {
     travel_time_from_loc1_min,
@@ -1462,547 +1461,307 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
     travel_distance_from_loc2_km,
   } = locationInfo || {};
 
-  // Fetch Place Photos using legacy PlacesService
+  // Fetch Place Data including photos, reviews, and details
   useEffect(() => {
     if (!window.google || !placeId) return;
     
     setPhotosLoading(true);
     
-    // Create a temporary div for PlacesService (required by the API)
     const tempDiv = document.createElement('div');
     const service = new window.google.maps.places.PlacesService(tempDiv);
     
     service.getDetails(
       {
         placeId: placeId,
-        fields: ['photos']
+        fields: ['name', 'rating', 'user_ratings_total', 'price_level', 'types', 'opening_hours', 'photos', 'reviews', 'editorial_summary', 'wheelchair_accessible_entrance']
       },
       (place, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.photos) {
-          const photoData = place.photos.slice(0, 10).map((photo) => ({
-            thumbnail: photo.getUrl({ maxHeight: 120, maxWidth: 120 }),
-            fullSize: photo.getUrl({ maxHeight: 400, maxWidth: 600 }),
-          }));
-          setPhotoUris(photoData);
+        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          setPlaceData(place);
+          
+          // Process photos
+          if (place?.photos) {
+            const photoData = place.photos.slice(0, 10).map((photo) => ({
+              thumbnail: photo.getUrl({ maxHeight: 150, maxWidth: 150 }),
+              fullSize: photo.getUrl({ maxHeight: 400, maxWidth: 600 }),
+            }));
+            setPhotoUris(photoData);
+          } else {
+            setPhotoUris([]);
+          }
         } else {
-          console.log("No photos available or error:", status);
-          setPhotoUris([]);
+          console.log("Error fetching place details:", status);
         }
         setPhotosLoading(false);
       }
     );
   }, [placeId]);
 
-  // Fetch Place Reviews using legacy PlacesService
-  useEffect(() => {
-    if (!window.google || !placeId) return;
-    
-    setReviewsLoading(true);
-    
-    // Create a temporary div for PlacesService (required by the API)
-    const tempDiv = document.createElement('div');
-    const service = new window.google.maps.places.PlacesService(tempDiv);
-    
-    service.getDetails(
-      {
-        placeId: placeId,
-        fields: ['reviews']
-      },
-      (place, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && place?.reviews && place.reviews.length > 0) {
-          const mappedReviews = place.reviews.slice(0, 5).map((r) => ({
-            rating: r.rating,
-            text: r.text && r.text.length > 80 ? r.text.slice(0, 80) + "…" : (r.text || ""),
-            author: r.author_name || "Anonymous",
-            photo: r.profile_photo_url || null,
-            profileUrl: r.author_url || "#",
-          }));
-          setReviews(mappedReviews);
-        } else {
-          console.log("No reviews available or error:", status);
-          setReviews([]);
-        }
-        setReviewsLoading(false);
-      }
-    );
-  }, [placeId]);
-
-  // Setup Google Place Card
-  useEffect(() => {
-    if (!ref.current || !placeId) return;
-    ref.current.innerHTML = "";
-
-    const request = document.createElement("gmp-place-details-place-request");
-    request.setAttribute("place", placeId);
-
-    const config = document.createElement("gmp-place-content-config");
-    const createElement = (tag, attrs = {}) => {
-      const el = document.createElement(tag);
-      for (const [key, val] of Object.entries(attrs)) {
-        el.setAttribute(key, val);
-      }
-      return el;
-    };
-
-    config.appendChild(createElement("gmp-place-rating"));
-    config.appendChild(createElement("gmp-place-type"));
-    config.appendChild(createElement("gmp-place-price"));
-    config.appendChild(createElement("gmp-place-open-now-status"));
-    config.appendChild(
-      createElement("gmp-place-attribution", {
-        "light-scheme-color": "gray",
-        "dark-scheme-color": "white",
-      })
-    );
-
-    ref.current.appendChild(request);
-    ref.current.appendChild(config);
-  }, [placeId]);
-
   if (!placeId) return null;
 
+  // Load Google Fonts
   useEffect(() => {
     const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
     return () => {
-      document.head.removeChild(link);
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
     };
   }, []);
+
+  // Helper functions
+  const getPriceLevel = (level) => {
+    if (!level) return '';
+    return '₹'.repeat(level);
+  };
+
+  const getPlaceType = (types) => {
+    if (!types || types.length === 0) return '';
+    // Filter out generic types and return the most specific one
+    const specificTypes = types.filter(t => !['point_of_interest', 'establishment'].includes(t));
+    if (specificTypes.length > 0) {
+      return specificTypes[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+    return '';
+  };
+
+  const getOpenStatus = (openingHours) => {
+    if (!openingHours) return null;
+    const isOpen = openingHours.isOpen?.();
+    if (isOpen === undefined) return null;
+    
+    // Get current day's hours
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const periods = openingHours.periods;
+    
+    if (periods && periods.length > 0) {
+      const todayPeriod = periods.find(p => p.open.day === dayOfWeek);
+      if (todayPeriod && todayPeriod.close) {
+        const closeTime = todayPeriod.close.time;
+        const hours = closeTime.substring(0, 2);
+        const minutes = closeTime.substring(2);
+        const formattedTime = `${parseInt(hours) % 12 || 12}:${minutes} ${parseInt(hours) >= 12 ? 'pm' : 'am'}`;
+        return {
+          isOpen,
+          closeTime: formattedTime
+        };
+      }
+    }
+    
+    return { isOpen };
+  };
+
+  const openStatus = placeData?.opening_hours ? getOpenStatus(placeData.opening_hours) : null;
+  const firstReview = placeData?.reviews?.[0];
 
   return (
     <div
       style={{
         width: "100%",
-        maxWidth: 450,
+        maxWidth: 420,
         borderRadius: "16px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 1px 6px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
         backgroundColor: "#FFFFFF",
-        marginBottom: "1.5rem",
-        fontFamily: "'DM Sans', sans-serif",
+        marginBottom: "0.75rem",
+        fontFamily: "'Roboto', sans-serif",
         color: "#000",
-        transition: "all 0.3s ease",
       }}
-      className="cursor-pointer hover:shadow-xl transition-shadow duration-300"
+      className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+      onClick={() => setIsDetailedView(false)}
     >
-      {/* Hero Image with Venue Name Overlay */}
-      {photoUris.length > 0 ? (
-        <div 
-          style={{
-            width: "100%",
-            height: "250px",
-            position: "relative",
-            overflow: "hidden",
-            backgroundColor: "#F5F5F5",
-          }}
-          onClick={() => setIsDetailedView(false)}
-        >
-          <img
-            src={photoUris[selectedPhotoIndex]?.fullSize || photoUris[0]?.fullSize}
-            alt="Venue"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-          
-          {/* Gradient Overlay */}
-          <div style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "100px",
-            background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)",
-          }} />
-          
-          {/* Venue Name on Image - Hidden, will use Google's component */}
-          <div style={{
-            position: "absolute",
-            bottom: "16px",
-            left: "16px",
-            right: "16px",
-            zIndex: 2,
-          }}>
-            <div 
-              ref={ref}
-              style={{
-                color: "#FFFFFF",
-                fontSize: "18px",
-                fontWeight: "600",
-                textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                lineHeight: "1.3",
-              }}
-            />
-          </div>
-          
-          {/* Photo counter badge */}
-          {photoUris.length > 1 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "16px",
-                right: "16px",
-                backgroundColor: "rgba(0, 0, 0, 0.75)",
-                color: "#FFFFFF",
-                padding: "6px 12px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: "600",
-                fontFamily: "'DM Sans', sans-serif",
-                backdropFilter: "blur(4px)",
-              }}
-            >
-              {selectedPhotoIndex + 1} / {photoUris.length}
-            </div>
-          )}
-        </div>
-      ) : photosLoading ? (
-        <div
-          style={{
-            width: "100%",
-            height: "250px",
-            backgroundColor: "#F5F5F5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "13px",
-            color: "#999",
-            fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
-          Loading image...
-        </div>
-      ) : (
-        <div
-          style={{
-            width: "100%",
-            height: "180px",
-            backgroundColor: "#F5F5F5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "13px",
-            color: "#999",
-            fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
-          No image available
-        </div>
-      )}
+      {/* Venue Name */}
+      <div style={{ padding: "12px 12px 6px 12px" }}>
+        <h2 style={{
+          fontSize: "15px",
+          fontWeight: "500",
+          color: "#202124",
+          margin: 0,
+          marginBottom: "2px",
+          lineHeight: "20px",
+        }}>
+          {placeData?.name || "Loading..."}
+        </h2>
 
-      {/* Card Content */}
-      <div style={{ padding: "20px" }}>
-        {/* Venue Name (from Google component - positioned absolutely on image) */}
-        <div style={{ display: "none" }}>
-          <gmp-place-details
-            ref={ref}
-            truncation-preferred
-            style={{
-              width: "100%",
-              display: "block",
-            }}
-          />
-        </div>
-
-        {/* Rating, Type, Price, Status Row */}
+        {/* Rating, Reviews, Price, Type */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "12px",
+          gap: "4px",
+          fontSize: "12px",
+          color: "#70757a",
+          marginBottom: "2px",
           flexWrap: "wrap",
-          marginBottom: "16px",
         }}>
-          {/* We'll use a custom layout but keep Google's component hidden for data */}
-          <div 
-            onClick={() => setIsDetailedView(false)}
-            style={{
-              width: "100%",
-            }}
-          >
-            <gmp-place-details
-              truncation-preferred
-              style={{
-                width: "100%",
-                display: "block",
-                "--gmp-mat-color-surface": "#FFFFFF",
-                "--gmp-mat-color-on-surface": "#474747",
-                "--gmp-mat-color-primary": "#4285F4",
-                "--gmp-header-visibility": "none",
-                "--gmp-footer-visibility": "none",
-                fontSize: "14px",
-              }}
-            />
-          </div>
+          {placeData?.rating && (
+            <>
+              <span style={{ fontWeight: "500", color: "#202124" }}>{placeData.rating}</span>
+              <span style={{ color: "#fbbc04", fontSize: "11px" }}>★</span>
+              {placeData?.user_ratings_total && (
+                <span>({placeData.user_ratings_total})</span>
+              )}
+            </>
+          )}
+          {placeData?.price_level && (
+            <>
+              <span>·</span>
+              <span style={{ color: "#70757a" }}>{getPriceLevel(placeData.price_level)}</span>
+            </>
+          )}
+          {placeData?.types && (
+            <>
+              <span>·</span>
+              <span style={{ 
+                color: "#1a73e8",
+                textDecoration: "none",
+              }}>
+                {getPlaceType(placeData.types)}
+              </span>
+            </>
+          )}
+          {placeData?.wheelchair_accessible_entrance && (
+            <>
+              <span>·</span>
+              <span style={{ fontSize: "12px" }}>♿</span>
+            </>
+          )}
         </div>
 
-        {/* Travel Time Cards */}
-        {locationInfo && (
+        {/* Open/Closed Status */}
+        {openStatus && (
+          <div style={{
+            fontSize: "12px",
+            color: openStatus.isOpen ? "#188038" : "#d93025",
+            fontWeight: "500",
+          }}>
+            {openStatus.isOpen ? "Open" : "Closed"}
+            {openStatus.closeTime && openStatus.isOpen && (
+              <span style={{ color: "#70757a", fontWeight: "400" }}>
+                {" "}· Closes {openStatus.closeTime}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Photo Gallery */}
+      {photoUris.length > 0 && (
+        <div style={{ padding: "0 12px 8px 12px" }}>
           <div
+            className="hide-scrollbar"
             style={{
               display: "flex",
-              gap: "12px",
-              marginBottom: "16px",
+              gap: "6px",
+              overflowX: "auto",
+              scrollBehavior: "smooth",
             }}
           >
-            <div
-              onClick={() => setIsDetailedView(false)}
-              style={{
-                flex: 1,
-                backgroundColor: "#E3F2FD",
-                borderRadius: "12px",
-                padding: "12px 14px",
-                border: "1px solid #BBDEFB",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#BBDEFB";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#E3F2FD";
-              }}
-            >
-              <div style={{
-                fontSize: "11px",
-                fontWeight: "600",
-                color: "#1976D2",
-                marginBottom: "4px",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}>
-                User 1
-              </div>
-              <div style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                color: "#0D47A1",
-              }}>
-                {travel_time_from_loc1_min ? `${travel_time_from_loc1_min} min` : "N/A"}
-              </div>
-              <div style={{
-                fontSize: "11px",
-                color: "#1976D2",
-                marginTop: "2px",
-              }}>
-                {travel_distance_from_loc1_km !== undefined ? `${travel_distance_from_loc1_km} km` : ""}
-              </div>
-            </div>
+            {photoUris.slice(0, 5).map((photo, index) => (
+              <img
+                key={index}
+                src={photo.thumbnail}
+                alt={`Photo ${index + 1}`}
+                style={{
+                  minWidth: "100px",
+                  width: "100px",
+                  height: "100px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  transition: "transform 0.2s ease",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPhotoIndex(index);
+                }}
+                onError={(e) => (e.target.style.display = "none")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-            <div
-              onClick={() => setIsDetailedView(false)}
+      {/* Editorial Summary or First Review */}
+      {(placeData?.editorial_summary?.overview || firstReview) && (
+        <div style={{
+          padding: "0 12px 8px 12px",
+          display: "flex",
+          gap: "6px",
+          alignItems: "flex-start",
+        }}>
+          {firstReview?.profile_photo_url && (
+            <img
+              src={firstReview.profile_photo_url}
+              alt="Reviewer"
               style={{
-                flex: 1,
-                backgroundColor: "#F3E5F5",
-                borderRadius: "12px",
-                padding: "12px 14px",
-                border: "1px solid #E1BEE7",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
+                width: "20px",
+                height: "20px",
+                borderRadius: "50%",
+                flexShrink: 0,
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#E1BEE7";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#F3E5F5";
-              }}
-            >
-              <div style={{
-                fontSize: "11px",
-                fontWeight: "600",
-                color: "#7B1FA2",
-                marginBottom: "4px",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}>
-                User 2
-              </div>
-              <div style={{
-                fontSize: "14px",
-                fontWeight: "600",
-                color: "#4A148C",
-              }}>
-                {travel_time_from_loc2_min ? `${travel_time_from_loc2_min} min` : "N/A"}
-              </div>
-              <div style={{
-                fontSize: "11px",
-                color: "#7B1FA2",
-                marginTop: "2px",
-              }}>
-                {travel_distance_from_loc2_km !== undefined ? `${travel_distance_from_loc2_km} km` : ""}
-              </div>
-            </div>
+            />
+          )}
+          <div style={{
+            fontSize: "12px",
+            color: "#70757a",
+            lineHeight: "16px",
+            flex: 1,
+          }}>
+            {placeData?.editorial_summary?.overview || 
+             (firstReview?.text?.length > 80 
+               ? firstReview.text.substring(0, 80) + "..." 
+               : firstReview?.text)}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Photo Gallery Thumbnails */}
-        {photoUris.length > 1 && (
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              className="hide-scrollbar"
-              style={{
-                display: "flex",
-                gap: "8px",
-                overflowX: "auto",
-                scrollBehavior: "smooth",
-                paddingBottom: "4px",
-              }}
-            >
-              {photoUris.map((photo, index) => (
-                <img
-                  key={index}
-                  src={photo.thumbnail}
-                  alt={`Photo ${index + 1}`}
-                  style={{
-                    minWidth: "70px",
-                    width: "70px",
-                    height: "70px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    border: selectedPhotoIndex === index
-                      ? "3px solid #4285F4"
-                      : "3px solid transparent",
-                    transition: "all 0.2s ease",
-                    opacity: selectedPhotoIndex === index ? 1 : 0.7,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedPhotoIndex(index);
-                  }}
-                  onError={(e) => (e.target.style.display = "none")}
-                  onMouseEnter={(e) => {
-                    if (selectedPhotoIndex !== index) {
-                      e.currentTarget.style.opacity = "1";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedPhotoIndex !== index) {
-                      e.currentTarget.style.opacity = "0.7";
-                    }
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Reviews Section */}
-        {reviewsLoading ? (
-          <div
-            style={{
-              padding: "12px",
-              fontSize: "12px",
-              fontFamily: "'DM Sans', sans-serif",
-              color: "#999",
-              textAlign: "center",
-              backgroundColor: "#F8F9FA",
-              borderRadius: "8px",
-            }}
-          >
-            Loading reviews...
-          </div>
-        ) : reviews.length > 0 ? (
-          <div style={{ marginTop: "8px" }}>
-            <div
-              style={{
-                fontSize: "12px",
-                fontWeight: "600",
-                color: "#5F6368",
-                marginBottom: "8px",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              Recent Reviews
-            </div>
-            <div
-              className="hide-scrollbar"
-              style={{
-                display: "flex",
-                gap: "10px",
-                overflowX: "auto",
-                paddingBottom: "4px",
-              }}
-            >
-              {reviews.map((r, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    minWidth: "260px",
-                    maxWidth: "300px",
-                    background: "#F8F9FA",
-                    border: "1px solid #E8EAED",
-                    borderRadius: "10px",
-                    padding: "12px",
-                    fontSize: "12px",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                  title={r.text}
-                >
-                  <div style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "8px",
-                    marginBottom: "6px",
-                  }}>
-                    {r.photo && (
-                      <img
-                        src={r.photo}
-                        alt={r.author}
-                        style={{
-                          width: "24px",
-                          height: "24px",
-                          borderRadius: "50%",
-                        }}
-                      />
-                    )}
-                    <a
-                      href={r.profileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ 
-                        fontWeight: "600", 
-                        fontSize: "12px", 
-                        color: "#1a73e8",
-                        textDecoration: "none",
-                        flex: 1,
-                      }}
-                    >
-                      {r.author}
-                    </a>
-                    <span style={{ 
-                      color: "#FBBC04", 
-                      fontSize: "13px",
-                      fontWeight: "600",
-                    }}>
-                      ★ {r.rating}
-                    </span>
-                  </div>
-                  <div style={{ 
-                    fontSize: "11px",
-                    lineHeight: "16px",
-                    color: "#5F6368",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                  }}>
-                    {r.text}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
+      {/* Action Buttons */}
+      <div style={{
+        display: "flex",
+        gap: "6px",
+        padding: "6px 12px 10px 12px",
+        borderTop: "1px solid #e8eaed",
+        overflowX: "auto",
+      }}
+      className="hide-scrollbar"
+      >
+        <ActionButton icon="🧭" label="Directions" />
+        <ActionButton icon="📋" label="Menu" />
+        <ActionButton icon="📞" label="Call" />
+        <ActionButton icon="↗" label="Share" />
       </div>
+
+      {/* Travel Time Info */}
+      {locationInfo && (
+        <div style={{
+          display: "flex",
+          gap: "6px",
+          padding: "0 12px 12px 12px",
+        }}>
+          <TravelTimeCard
+            label="User 1"
+            time={travel_time_from_loc1_min}
+            distance={travel_distance_from_loc1_km}
+            color="#1a73e8"
+          />
+          <TravelTimeCard
+            label="User 2"
+            time={travel_time_from_loc2_min}
+            distance={travel_distance_from_loc2_km}
+            color="#ea4335"
+          />
+        </div>
+      )}
 
       {/* Styles */}
       <style>{`
@@ -2013,115 +1772,81 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-        
-        /* Hide Google Place Details component but extract venue name */
-        gmp-place-details {
-          font-family: 'DM Sans', sans-serif !important;
-        }
-        
-        gmp-place-details [slot="headline"] {
-          font-family: 'DM Sans', sans-serif !important;
-          font-weight: 600 !important;
-          font-size: 16px !important;
-          line-height: 22px !important;
-          color: #202124 !important;
-        }
-        
-        gmp-place-details gmp-place-rating {
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 8px !important;
-        }
-        
-        gmp-place-details gmp-place-type {
-          font-family: 'DM Sans', sans-serif !important;
-          font-size: 13px !important;
-          color: #5F6368 !important;
-        }
-        
-        gmp-place-details gmp-place-open-now-status {
-          font-family: 'DM Sans', sans-serif !important;
-          font-size: 12px !important;
-        }
-        
-        gmp-place-details gmp-place-price {
-          font-family: 'DM Sans', sans-serif !important;
-          font-size: 13px !important;
-          font-weight: 500 !important;
-        }
       `}</style>
     </div>
   );
 };
 
-// Info Box Component 
-const InfoBox = ({ label, time, distance }) => (
-  <div
+// Action Button Component
+const ActionButton = ({ icon, label }) => (
+  <button
     style={{
-      width: "190px",
-      height: "37px",
       display: "flex",
       alignItems: "center",
-      gap: "8px",
-      borderRadius: "4px",
-      border: "1px solid #E0E0E0",
-      paddingTop: "8px",
-      paddingRight: "24px",
-      paddingBottom: "8px",
-      paddingLeft: "24px",
-      backgroundColor: "#FFFFFF"
+      gap: "4px",
+      padding: "6px 12px",
+      backgroundColor: "#e8f0fe",
+      border: "none",
+      borderRadius: "16px",
+      fontSize: "12px",
+      fontWeight: "500",
+      color: "#1a73e8",
+      cursor: "pointer",
+      whiteSpace: "nowrap",
+      transition: "background-color 0.2s ease",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#d2e3fc";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#e8f0fe";
+    }}
+    onClick={(e) => {
+      e.stopPropagation();
     }}
   >
-    <span style={{
-      width: "39px",
-      height: "21px",
-      fontFamily: "'DM Sans', sans-serif",
-      fontWeight: "600",
-      fontSize: "14px",
-      lineHeight: "21px",
-      color: "#000000",
-      display: "flex",
-      alignItems: "center"
-    }}>
-      {label}
-    </span>
-    <span style={{
-      width: "95px",
-      height: "21px",
-      fontFamily: "'DM Sans', sans-serif",
-      fontWeight: "500",
-      fontSize: "14px",
-      lineHeight: "21px",
-      color: "#777777",
-      display: "flex",
-      alignItems: "center"
-    }}>
-      {time ? `${time}min` : ""}{time && distance !== undefined ? " • " : ""}{distance !== undefined ? `${distance}km` : ""}
-    </span>
-  </div>
+    <span style={{ fontSize: "14px" }}>{icon}</span>
+    <span>{label}</span>
+  </button>
 );
 
-const UserInfoContainer = ({ user1Data, user2Data }) => (
+// Travel Time Card Component
+const TravelTimeCard = ({ label, time, distance, color }) => (
   <div
     style={{
-      width: "414px",
-      height: "37px",
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center"
+      flex: 1,
+      padding: "8px 10px",
+      backgroundColor: "#f8f9fa",
+      borderRadius: "6px",
+      border: `1px solid #e8eaed`,
     }}
   >
-    <InfoBox 
-      label="User 1" 
-      time={user1Data?.time} 
-      distance={user1Data?.distance} 
-    />
-    <InfoBox 
-      label="User 2" 
-      time={user2Data?.time} 
-      distance={user2Data?.distance} 
-    />
+    <div style={{
+      fontSize: "10px",
+      fontWeight: "500",
+      color: "#70757a",
+      marginBottom: "3px",
+      textTransform: "uppercase",
+      letterSpacing: "0.3px",
+    }}>
+      {label}
+    </div>
+    <div style={{
+      fontSize: "13px",
+      fontWeight: "500",
+      color: color,
+    }}>
+      {time ? `${time} min` : "N/A"}
+    </div>
+    {distance !== undefined && (
+      <div style={{
+        fontSize: "10px",
+        color: "#70757a",
+        marginTop: "1px",
+      }}>
+        {distance} km
+      </div>
+    )}
   </div>
 );
 

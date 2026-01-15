@@ -3,6 +3,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import SegmentedControl from './SegmentedControl';
 import SearchRadiusSlider from './SearchRadiusSlider';
 import TimeDifferenceSlider from './TimeDifferenceSlider';
+import GooglePlacesCardCompact from './GooglePlacesCardCompact';
 
 const VenueResultsSidebar = ({ 
   venues, 
@@ -46,8 +47,8 @@ const VenueResultsSidebar = ({
           top: 0,
           bottom: 0,
           width: '30vw',
-          minWidth: '350px',
-          maxWidth: '500px',
+          minWidth: '370px',
+          maxWidth: '550px',
           background: 'white',
           borderRight: '1px solid #e2e8f0',
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
@@ -170,7 +171,7 @@ const VenueResultsSidebar = ({
           style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '24px 20px'
+            padding: '16px 12px'
           }}
         >
           {loading ? (
@@ -225,18 +226,19 @@ const VenueResultsSidebar = ({
             </div>
           ) : (
             venues.map((venue, index) => {
-              const globalIndex = index + (currentPage - 1) * itemsPerPage;
               return (
-                <VenueCard
+                <div 
                   key={venue.place_id}
-                  venue={venue}
-                  index={globalIndex}
-                isSelected={selectedVenueId === venue.place_id}
-                isHovered={hoveredVenueId === venue.place_id}
-                onHover={() => onVenueHover(venue.place_id)}
-                onLeave={() => onVenueHover(null)}
-                onClick={() => onVenueClick(venue.place_id)}
-                />
+                  onMouseEnter={() => onVenueHover && onVenueHover(venue.place_id)}
+                  onMouseLeave={() => onVenueHover && onVenueHover(null)}
+                  className={`transition-transform duration-200 ${hoveredVenueId === venue.place_id ? 'translate-y-[-2px]' : ''} mb-2 flex justify-center`}
+                >
+                  <GooglePlacesCardCompact
+                    placeId={venue.place_id}
+                    locationInfo={venue}
+                    onClick={() => onVenueClick(venue.place_id)}
+                  />
+                </div>
               );
             })
           )}
@@ -301,344 +303,8 @@ const VenueResultsSidebar = ({
             </div>
           )}
         </div>
-
-
       </div>
     </>
-  );
-};
-
-const VenueCard = ({ venue, index, isSelected, isHovered, onHover, onLeave, onClick }) => {
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const carouselRef = useRef(null);
-  const cardRef = useRef(null);
-  const isInternalScroll = useRef(false);
-  const isMouseOverCard = useRef(false);
-
-  // Scroll into view when hovered from map
-  useEffect(() => {
-    // Only scroll into view if the hover was NOT triggered by the mouse actually being over the card
-    // This prevents annoying jumps when the user is hovering results in the sidebar itself
-    if (isHovered && cardRef.current && !isMouseOverCard.current) {
-      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [isHovered]);
-
-  const handleMouseEnter = () => {
-    isMouseOverCard.current = true;
-    onHover();
-  };
-
-  const handleMouseLeave = () => {
-    isMouseOverCard.current = false;
-    onLeave();
-  };
-
-  const getVenueIcon = (types) => {
-    if (!types) return '📍';
-    if (types.includes('restaurant')) return '🍽️';
-    if (types.includes('cafe') || types.includes('coffee')) return '☕';
-    if (types.includes('bar') || types.includes('night_club')) return '🍷';
-    if (types.includes('gym') || types.includes('fitness')) return '💪';
-    if (types.includes('park')) return '🌳';
-    return '📍';
-  };
-
-  const hasPhotos = venue.photo_references && venue.photo_references.length > 0;
-  
-  const getPhotoUrl = (ref) => 
-    `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${ref}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
-
-  // Synchronize scroll position when index changes externally (thumbnails/arrows)
-  useEffect(() => {
-    if (carouselRef.current && isInternalScroll.current) {
-      isInternalScroll.current = false;
-      return;
-    }
-    if (carouselRef.current) {
-      const scrollAmount = currentPhotoIndex * carouselRef.current.offsetWidth;
-      carouselRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-    }
-  }, [currentPhotoIndex]);
-
-  const handleScroll = () => {
-    if (!carouselRef.current) return;
-    const index = Math.round(carouselRef.current.scrollLeft / carouselRef.current.offsetWidth);
-    if (index !== currentPhotoIndex) {
-      isInternalScroll.current = true;
-      setCurrentPhotoIndex(index);
-    }
-  };
-
-  const nextPhoto = (e) => {
-    e.stopPropagation();
-    setCurrentPhotoIndex((prev) => (prev + 1) % venue.photo_references.length);
-  };
-
-  const prevPhoto = (e) => {
-    e.stopPropagation();
-    setCurrentPhotoIndex((prev) => (prev - 1 + venue.photo_references.length) % venue.photo_references.length);
-  };
-
-  return (
-    <div
-      ref={cardRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      style={{
-        background: isSelected || isHovered ? '#ffffff' : '#ffffff',
-        border: isSelected ? '2px solid #6366f1' : isHovered ? '2px solid #8b5cf6' : '1px solid #f1f5f9',
-        borderRadius: '20px',
-        marginBottom: '20px',
-        cursor: 'pointer',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: isSelected ? '0 12px 25px -5px rgba(99, 102, 241, 0.25)' : isHovered ? '0 8px 20px -5px rgba(139, 92, 246, 0.15)' : '0 4px 6px -1px rgba(0, 0, 0, 0.03)',
-        overflow: 'hidden'
-      }}
-      className="venue-card-sidebar group"
-    >
-      {/* Photo Carousel Area */}
-      <div style={{ position: 'relative', height: '140px', background: '#f1f5f9' }}>
-        {hasPhotos ? (
-          <>
-            <div 
-              ref={carouselRef}
-              onScroll={handleScroll}
-              className="hide-scrollbar"
-              style={{
-                display: 'flex',
-                overflowX: 'auto',
-                width: '100%',
-                height: '100%',
-                scrollSnapType: 'x mandatory',
-                scrollBehavior: 'smooth',
-                WebkitOverflowScrolling: 'touch'
-              }}
-            >
-              {venue.photo_references.map((ref, i) => (
-                <img 
-                  key={i}
-                  src={getPhotoUrl(ref)} 
-                  alt={`${venue.name} photo ${i}`}
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover', 
-                    flexShrink: 0,
-                    scrollSnapAlign: 'start'
-                  }}
-                />
-              ))}
-            </div>
-            
-            {venue.photo_references.length > 1 && (
-              <>
-                <button 
-                  onClick={prevPhoto}
-                  className="nav-arrow"
-                  style={{ left: '10px' }}
-                >
-                  <ChevronLeft />
-                </button>
-                <button 
-                  onClick={nextPhoto}
-                  className="nav-arrow"
-                  style={{ right: '10px' }}
-                >
-                  <ChevronRight />
-                </button>
-                {/* Dots indicator */}
-                <div style={{
-                  position: 'absolute', bottom: '10px', left: '0', right: '0',
-                  display: 'flex', justifyContent: 'center', gap: '5px', zIndex: 2,
-                  pointerEvents: 'none'
-                }}>
-                  {venue.photo_references.slice(0, 5).map((_, i) => (
-                    <div key={i} style={{
-                      width: '5px', height: '5px', borderRadius: '50%',
-                      background: i === currentPhotoIndex ? 'white' : 'rgba(255,255,255,0.4)',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                      transition: 'all 0.3s ease'
-                    }} />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
-            {getVenueIcon(venue.types)}
-          </div>
-        )}
-        {/* Label Overlay - Sleek Badge */}
-        <div style={{
-          position: 'absolute', top: '12px', left: '12px',
-          background: 'rgba(15, 23, 42, 0.8)',
-          backdropFilter: 'blur(8px)',
-          color: 'white', width: '28px', height: '28px',
-          borderRadius: '8px', fontSize: '14px', fontWeight: 800,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
-          border: '1px solid rgba(255,255,255,0.2)',
-          zIndex: 3,
-          fontFamily: "'Outfit', sans-serif"
-        }}>
-          {String.fromCharCode(65 + index)}
-        </div>
-      </div>
-
-      <div style={{ padding: '16px' }}>
-        <h4 style={{
-          margin: '0 0 8px 0', fontSize: '16px', fontWeight: 700, color: '#1e293b',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-        }}>
-          {venue.name}
-        </h4>
-
-        {/* Rating */}
-        {venue.rating && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', color: '#fbbf24' }}>
-              {'★'.repeat(Math.round(venue.rating))}
-              <span style={{ color: '#e2e8f0' }}>{'★'.repeat(5 - Math.round(venue.rating))}</span>
-            </div>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>{venue.rating}</span>
-            <span style={{ fontSize: '12px', color: '#94a3b8' }}>({venue.user_ratings_total})</span>
-          </div>
-        )}
-
-        {/* Horizontal Photo Thumbnails */}
-        {hasPhotos && venue.photo_references.length > 1 && (
-          <div 
-            className="hide-scrollbar"
-            style={{ 
-              display: 'flex', gap: '8px', overflowX: 'auto', 
-              marginBottom: '16px', paddingBottom: '4px'
-            }}
-          >
-            {venue.photo_references.map((ref, i) => (
-              <img 
-                key={i}
-                src={getPhotoUrl(ref)} 
-                alt={`${venue.name} thumbnail ${i}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrentPhotoIndex(i);
-                }}
-                style={{ 
-                  width: '56px', height: '56px', objectFit: 'cover', 
-                  borderRadius: '10px', flexShrink: 0,
-                  border: i === currentPhotoIndex ? '2px solid #4F46E5' : '2px solid transparent',
-                  opacity: i === currentPhotoIndex ? 1 : 0.7,
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Recent Reviews - Horizontally Scrollable */}
-        {venue.reviews && venue.reviews.length > 0 && (
-          <div 
-            className="hide-scrollbar"
-            style={{ 
-              display: 'flex', gap: '8px', overflowX: 'auto', 
-              marginBottom: '12px', paddingBottom: '4px',
-              scrollSnapType: 'x mandatory'
-            }}
-          >
-            {venue.reviews.map((review, idx) => (
-              <div 
-                key={idx}
-                style={{ 
-                  flexShrink: 0, width: '220px', padding: '10px 12px', 
-                  background: '#f8fafc', borderRadius: '12px', 
-                  border: '1px solid #f1f5f9', scrollSnapAlign: 'start'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                  <img 
-                    src={review.profile_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name)}&background=667eea&color=fff`} 
-                    alt={review.author_name}
-                    onError={(e) => {
-                      e.target.onerror = null; // Prevent infinite loop
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(review.author_name)}&background=667eea&color=fff`;
-                    }}
-                    style={{ width: '18px', height: '18px', borderRadius: '50%' }}
-                  />
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {review.author_name}
-                  </span>
-                  <span style={{ fontSize: '10px', color: '#fbbf24', marginLeft: 'auto' }}>
-                    ★ {review.rating}
-                  </span>
-                </div>
-                <p style={{ 
-                  margin: 0, fontSize: '11px', color: '#64748b', fontStyle: 'italic',
-                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden', lineHeight: '1.4'
-                }}>
-                  "{review.text}"
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Travel Times Grid */}
-        <div style={{ 
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', 
-          padding: '16px 0', borderTop: '1px solid #f1f5f9'
-        }}>
-          {/* Person 1 */}
-          <div style={{ borderRight: '1px solid #f1f5f9', paddingRight: '8px' }}>
-            <div style={{ 
-              display: 'inline-block', padding: '2px 8px', borderRadius: '6px',
-              background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1',
-              fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px',
-              letterSpacing: '0.05em'
-            }}>
-              Person 1
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#0f172a', fontWeight: 700 }}>
-                <span style={{ fontSize: '16px' }}>🕒</span>
-                <span>{venue.travel_time_from_loc1_min || 0}m</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
-                <span style={{ color: '#94a3b8' }}>�️</span>
-                <span>{Number(venue.travel_distance_from_loc1_km || 0).toFixed(1)} km</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Person 2 */}
-          <div style={{ paddingLeft: '4px' }}>
-            <div style={{ 
-              display: 'inline-block', padding: '2px 8px', borderRadius: '6px',
-              background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6',
-              fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px',
-              letterSpacing: '0.05em'
-            }}>
-              Person 2
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#0f172a', fontWeight: 700 }}>
-                <span style={{ fontSize: '16px' }}>🕒</span>
-                <span>{venue.travel_time_from_loc2_min || 0}m</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
-                <span style={{ color: '#94a3b8' }}>�️</span>
-                <span>{Number(venue.travel_distance_from_loc2_km || 0).toFixed(1)} km</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 };
 
