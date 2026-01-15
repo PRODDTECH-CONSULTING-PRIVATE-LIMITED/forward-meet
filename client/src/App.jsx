@@ -3,7 +3,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
-import Header from "./components/header/Index";
+import Header from "./components/header";
 import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
 import ParticipantCard from "./components/ParticipantCard";
