@@ -1826,6 +1826,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
             gap: "6px",
             marginBottom: "6px",
             fontSize: "11px",
+            width: "100%",
           }}>
             {/* Person A */}
             <div style={{
@@ -1889,10 +1890,13 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
         display: "flex",
         gap: "6px",
         padding: "0 12px 12px 12px",
+        overflowX: "auto",
       }}
       className="hide-scrollbar"
       >
         <ActionButton icon="🧭" label="Directions" />
+        <ActionButton icon="🚕" label="Book Cab" />
+        <ActionButton icon="📅" label="Reserve" />
         <ActionButton icon="📋" label="Menu" />
         <ActionButton icon="📞" label="Call" />
         <ActionButton icon="↗" label="Share" />
