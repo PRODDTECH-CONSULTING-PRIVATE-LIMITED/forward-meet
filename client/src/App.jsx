@@ -30,7 +30,7 @@ const App = (props) => {
   const [generatingInvitation, setGeneratingInvitation] = useState(false);
   const [invitationError, setInvitationError] = useState("");
   const [searchMode, setSearchMode] = useState("time");
-  const [searchRadius, setSearchRadius] = useState(7);
+  const [searchRadius, setSearchRadius] = useState(2);
   const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(10);
   const [userLocation, setUserLocation] = useState(null);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);

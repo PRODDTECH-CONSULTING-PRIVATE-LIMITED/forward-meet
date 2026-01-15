@@ -133,7 +133,7 @@ const VenueResultsSidebar = ({
 
         {/* Filter Controls */}
         <div style={{
-          padding: '12px 20px',
+          padding: '8px 16px',
           borderBottom: '1px solid #e2e8f0',
           background: '#f8fafc'
         }}>
@@ -146,7 +146,7 @@ const VenueResultsSidebar = ({
             onChange={onSearchModeChange}
           />
           
-          <div style={{ marginTop: '12px' }}>
+          <div style={{ marginTop: '8px' }}>
             {searchMode === 'time' ? (
               <TimeDifferenceSlider
                 value={timeDifferenceMargin}
@@ -159,7 +159,7 @@ const VenueResultsSidebar = ({
                 value={searchRadius}
                 onChange={onSearchRadiusChange}
                 min={1}
-                max={50}
+                max={10}
               />
             )}
           </div>
