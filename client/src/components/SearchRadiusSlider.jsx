@@ -7,7 +7,7 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
 
   return (
     <>
-    <div style={{ marginTop: '0', display: 'flex', alignItems: 'center', gap: '12px', height: '36px', position: 'relative' }}>
+    <div style={{ marginTop: '0', display: 'flex', alignItems: 'center', gap: '12px', height: '32px', position: 'relative' }}>
       <span style={{ 
         fontSize: '10px', 
         fontWeight: 700, 
@@ -34,7 +34,7 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
         />
         <div style={{ 
           position: 'absolute', 
-          bottom: '-2px', 
+          top: '24px', 
           left: 0, 
           right: 0, 
           display: 'flex', 
@@ -60,11 +60,7 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 10 }) => {
         whiteSpace: 'nowrap',
         minWidth: '45px',
         textAlign: 'center',
-        flexShrink: 0,
-        height: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        flexShrink: 0
       }}>
         {value} km
       </div>

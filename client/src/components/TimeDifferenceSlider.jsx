@@ -7,7 +7,7 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
 
   return (
     <>
-    <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '32px' }}>
+    <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px', height: '32px', position: 'relative' }}>
       <span style={{ 
         fontSize: '10px', 
         fontWeight: 700, 
@@ -22,7 +22,7 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
         Time Margin
       </span>
       
-      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', paddingBottom: '14px' }}>
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', height: '100%' }}>
         <input
           type="range"
           min={min}
@@ -34,7 +34,7 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
         />
         <div style={{ 
           position: 'absolute', 
-          top: '20px', 
+          top: '28px', 
           left: 0, 
           right: 0, 
           display: 'flex', 
@@ -42,7 +42,8 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           fontSize: '9px', 
           color: '#94a3b8', 
           fontWeight: 600,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          lineHeight: '1'
         }}>
           <span>{min}m</span>
           <span>{max}m</span>
