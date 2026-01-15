@@ -1573,62 +1573,113 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
       onClick={() => setIsDetailedView(false)}
     >
-      {/* Venue Name */}
+      {/* Venue Name and Travel Time Grid */}
       <div style={{ padding: "12px 12px 6px 12px" }}>
-        <h2 style={{
-          fontSize: "15px",
-          fontWeight: "500",
-          color: "#202124",
-          margin: 0,
-          marginBottom: "2px",
-          lineHeight: "20px",
-        }}>
-          {placeData?.name || "Loading..."}
-        </h2>
-
-        {/* Rating, Reviews, Price, Type */}
+        {/* Venue Name and Rating on Same Line */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "4px",
-          fontSize: "12px",
-          color: "#70757a",
-          marginBottom: "2px",
-          flexWrap: "wrap",
+          gap: "6px",
+          marginBottom: "6px",
         }}>
+          <h2 style={{
+            fontSize: "15px",
+            fontWeight: "500",
+            color: "#202124",
+            margin: 0,
+            lineHeight: "20px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: 1,
+            minWidth: 0,
+          }}>
+            {placeData?.name || "Loading..."}
+          </h2>
+          
+          {/* Rating inline with name */}
           {placeData?.rating && (
-            <>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "3px",
+              fontSize: "12px",
+              color: "#70757a",
+              flexShrink: 0,
+            }}>
               <span style={{ fontWeight: "500", color: "#202124" }}>{placeData.rating}</span>
               <span style={{ color: "#fbbc04", fontSize: "11px" }}>★</span>
               {placeData?.user_ratings_total && (
                 <span>({placeData.user_ratings_total})</span>
               )}
-            </>
-          )}
-          {placeData?.price_level && (
-            <>
-              <span>·</span>
-              <span style={{ color: "#70757a" }}>{getPriceLevel(placeData.price_level)}</span>
-            </>
-          )}
-          {placeData?.types && (
-            <>
-              <span>·</span>
-              <span style={{ 
-                color: "#1a73e8",
-                textDecoration: "none",
-              }}>
-                {getPlaceType(placeData.types)}
-              </span>
-            </>
-          )}
-          {placeData?.wheelchair_accessible_entrance && (
-            <>
-              <span>·</span>
-              <span style={{ fontSize: "12px" }}>♿</span>
-            </>
+            </div>
           )}
         </div>
+
+        {/* Single-Line Travel Time Display */}
+        {locationInfo && (
+          <div style={{
+            display: "flex",
+            gap: "6px",
+            marginBottom: "6px",
+            fontSize: "11px",
+            flexWrap: "wrap",
+          }}>
+            {/* Person A */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "4px 8px",
+              backgroundColor: "#e8f0fe",
+              borderRadius: "4px",
+              flex: 1,
+              minWidth: "fit-content",
+            }}>
+              <span style={{ 
+                fontWeight: "600", 
+                color: "#1a73e8",
+                fontSize: "10px",
+              }}>Person A:</span>
+              <span style={{ color: "#5f6368" }}>🕐</span>
+              <span style={{ fontWeight: "500", color: "#202124" }}>
+                {travel_time_from_loc1_min ? `${travel_time_from_loc1_min}m` : "N/A"}
+              </span>
+              <span style={{ color: "#70757a" }}>•</span>
+              <span style={{ color: "#5f6368" }}>📍</span>
+              <span style={{ color: "#5f6368" }}>
+                {travel_distance_from_loc1_km ? `${travel_distance_from_loc1_km}km` : "N/A"}
+              </span>
+            </div>
+
+            {/* Person B */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "4px 8px",
+              backgroundColor: "#fce8e6",
+              borderRadius: "4px",
+              flex: 1,
+              minWidth: "fit-content",
+            }}>
+              <span style={{ 
+                fontWeight: "600", 
+                color: "#ea4335",
+                fontSize: "10px",
+              }}>Person B:</span>
+              <span style={{ color: "#5f6368" }}>🕐</span>
+              <span style={{ fontWeight: "500", color: "#202124" }}>
+                {travel_time_from_loc2_min ? `${travel_time_from_loc2_min}m` : "N/A"}
+              </span>
+              <span style={{ color: "#70757a" }}>•</span>
+              <span style={{ color: "#5f6368" }}>📍</span>
+              <span style={{ color: "#5f6368" }}>
+                {travel_distance_from_loc2_km ? `${travel_distance_from_loc2_km}km` : "N/A"}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Open/Closed Status */}
         {openStatus && (
@@ -1724,7 +1775,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
                   gap: "8px",
                   marginBottom: "6px",
                 }}>
-                  {review.profile_photo_url && (
+                  {review.profile_photo_url ? (
                     <img
                       src={review.profile_photo_url}
                       alt={review.author_name}
@@ -1733,9 +1784,31 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
                         height: "24px",
                         borderRadius: "50%",
                         flexShrink: 0,
+                        objectFit: "cover",
+                        backgroundColor: "#e8eaed",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
                       }}
                     />
-                  )}
+                  ) : null}
+                  {/* Fallback Avatar */}
+                  <div style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    backgroundColor: "#e8eaed",
+                    display: review.profile_photo_url ? "none" : "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    fontSize: "12px",
+                    color: "#5f6368",
+                    fontWeight: "500",
+                  }}>
+                    {review.author_name?.charAt(0)?.toUpperCase() || "?"}
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: "12px",
@@ -1799,7 +1872,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
       <div style={{
         display: "flex",
         gap: "6px",
-        padding: "6px 12px 10px 12px",
+        padding: "6px 12px 12px 12px",
         borderTop: "1px solid #e8eaed",
         overflowX: "auto",
       }}
@@ -1810,28 +1883,6 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
         <ActionButton icon="📞" label="Call" />
         <ActionButton icon="↗" label="Share" />
       </div>
-
-      {/* Travel Time Info */}
-      {locationInfo && (
-        <div style={{
-          display: "flex",
-          gap: "6px",
-          padding: "0 12px 12px 12px",
-        }}>
-          <TravelTimeCard
-            label="User 1"
-            time={travel_time_from_loc1_min}
-            distance={travel_distance_from_loc1_km}
-            color="#1a73e8"
-          />
-          <TravelTimeCard
-            label="User 2"
-            time={travel_time_from_loc2_min}
-            distance={travel_distance_from_loc2_km}
-            color="#ea4335"
-          />
-        </div>
-      )}
 
       {/* Styles */}
       <style>{`
