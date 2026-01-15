@@ -8,18 +8,26 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
   return (
     <div style={{ marginTop: '12px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[12px] font-bold text-slate-700 uppercase tracking-wider">⏱️ Time Margin</span>
-          <div style={{ 
-            fontSize: '11px', 
-            fontWeight: 700, 
-            color: '#4F46E5',
-            background: 'rgba(79, 70, 229, 0.08)',
-            padding: '1px 6px',
-            borderRadius: '4px'
-          }}>
-            {value} min
-          </div>
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+            ⏱️ Time Margin
+          </span>
+          <span className="text-slate-300 flex-shrink-0">•</span>
+          <span className="text-[9px] text-slate-500 font-medium whitespace-nowrap truncate">
+            Max difference in travel time between people
+          </span>
+        </div>
+        <div style={{ 
+          fontSize: '11px', 
+          fontWeight: 700, 
+          color: '#4F46E5',
+          background: 'rgba(79, 70, 229, 0.08)',
+          padding: '1px 6px',
+          borderRadius: '4px',
+          whiteSpace: 'nowrap',
+          flexShrink: 0
+        }}>
+          {value} min
         </div>
       </div>
       
@@ -37,18 +45,6 @@ const TimeDifferenceSlider = ({ value, onChange, min = 0, max = 30 }) => {
           <span>{min}m</span>
           <span>{max}m</span>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-1.5 opacity-70">
-        <svg 
-          style={{ width: '14px', height: '14px' }} 
-          className="text-slate-400" 
-          fill="currentColor" 
-          viewBox="0 0 20 20"
-        >
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-        </svg>
-        <span className="text-[10px] text-slate-500 font-medium">Max difference in travel time between people</span>
       </div>
     </div>
   );
