@@ -1556,7 +1556,6 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
   };
 
   const openStatus = placeData?.opening_hours ? getOpenStatus(placeData.opening_hours) : null;
-  const firstReview = placeData?.reviews?.[0];
 
   return (
     <div
@@ -1691,36 +1690,107 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
         </div>
       )}
 
-      {/* Editorial Summary or First Review */}
-      {(placeData?.editorial_summary?.overview || firstReview) && (
+      {/* Reviews Section */}
+      {placeData?.reviews && placeData.reviews.length > 0 && (
         <div style={{
           padding: "0 12px 8px 12px",
-          display: "flex",
-          gap: "6px",
-          alignItems: "flex-start",
         }}>
-          {firstReview?.profile_photo_url && (
-            <img
-              src={firstReview.profile_photo_url}
-              alt="Reviewer"
-              style={{
-                width: "20px",
-                height: "20px",
-                borderRadius: "50%",
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{
-            fontSize: "12px",
-            color: "#70757a",
-            lineHeight: "16px",
-            flex: 1,
-          }}>
-            {placeData?.editorial_summary?.overview || 
-             (firstReview?.text?.length > 80 
-               ? firstReview.text.substring(0, 80) + "..." 
-               : firstReview?.text)}
+          <div
+            className="hide-scrollbar"
+            style={{
+              display: "flex",
+              gap: "8px",
+              overflowX: "auto",
+              scrollBehavior: "smooth",
+            }}
+          >
+            {placeData.reviews.slice(0, 5).map((review, index) => (
+              <div
+                key={index}
+                style={{
+                  minWidth: "260px",
+                  maxWidth: "260px",
+                  padding: "10px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "8px",
+                  border: "1px solid #e8eaed",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Reviewer Info */}
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "6px",
+                }}>
+                  {review.profile_photo_url && (
+                    <img
+                      src={review.profile_photo_url}
+                      alt={review.author_name}
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        borderRadius: "50%",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "12px",
+                      fontWeight: "500",
+                      color: "#202124",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {review.author_name}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rating */}
+                {/* <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  marginBottom: "6px",
+                }}>
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        color: i < review.rating ? "#fbbc04" : "#e8eaed",
+                        fontSize: "12px",
+                      }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span style={{
+                    fontSize: "11px",
+                    color: "#70757a",
+                    marginLeft: "4px",
+                  }}>
+                    {review.relative_time_description}
+                  </span>
+                </div> */}
+
+                {/* Review Text */}
+                <div style={{
+                  fontSize: "12px",
+                  color: "#3c4043",
+                  lineHeight: "16px",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}>
+                  {review.text}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
