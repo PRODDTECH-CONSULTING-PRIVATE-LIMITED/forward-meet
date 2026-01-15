@@ -3,7 +3,7 @@ import React from 'react';
 const Header = () => {
   return (
     <div className="text-center">
-      <div className="relative inline-block mb-8">
+      <div className="relative inline-block">
         <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full"></div>
         <div className="relative inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl shadow-premium border border-indigo-50/50 backdrop-blur-md">
           <svg
@@ -33,10 +33,10 @@ const Header = () => {
       <p className="text-slate-500 text-base font-semibold leading-relaxed max-w-[300px] mx-auto mb-8">
         Discover the perfect venue exactly in the middle.
       </p>
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 rounded-full border border-indigo-100/50 backdrop-blur-sm">
+      {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 rounded-full border border-indigo-100/50 backdrop-blur-sm">
         <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
         <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Predictive Sync Active</span>
-      </div>
+      </div> */}
     </div>
   );
 };

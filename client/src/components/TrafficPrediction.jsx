@@ -93,9 +93,9 @@ const TrafficPrediction = (props) => {
                 <InfoCircleOutlined style={{ fontSize: '13px', color: '#64748b' }} />
                 <p 
                     className="font-medium text-slate-500 tracking-tight"
-                    style={{ fontSize: '12px' }}
+                    style={{ fontSize: '12px',marginLeft:"2px" }}
                 >
-                   {" "}Using predictive traffic modeling to ensure accurate travel time
+                Using predictive traffic modeling to ensure accurate travel time
                 </p>
             </div>
 

@@ -1902,6 +1902,7 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
           <ActionButton icon="🧭" label="Directions" />
           <ActionButton icon="🚕" label="Book Cab" />
           <ActionButton icon="📅" label="Reserve" />
+          <ActionButton icon="🗓️" label="Add to calendar" />
           <ActionButton icon="📋" label="Menu" />
           <ActionButton icon="📞" label="Call" />
           <ActionButton icon="↗" label="Share" />
