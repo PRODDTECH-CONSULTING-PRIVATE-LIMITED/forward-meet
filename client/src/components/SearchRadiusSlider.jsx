@@ -7,38 +7,37 @@ const SearchRadiusSlider = ({ value, onChange, min = 1, max = 50 }) => {
 
   return (
     <div style={{ marginTop: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0, flex: 1, marginRight: '12px' }}>
           <span style={{ 
-            fontSize: '12px', 
+            fontSize: '11px', 
             fontWeight: 700, 
-            color: '#334155', 
+            color: '#1a1a1a', 
             textTransform: 'uppercase', 
-            letterSpacing: '0.025em',
-            whiteSpace: 'nowrap',
-            flexShrink: 0 
+            letterSpacing: '0.05em',
+            whiteSpace: 'nowrap'
           }}>
-            📍 Search Radius
+            Search Radius
           </span>
-          <span style={{ color: '#cbd5e1', flexShrink: 0 }}>•</span>
+          <span style={{ color: '#E5E7EB', fontWeight: 400 }}>•</span>
           <span style={{ 
-            fontSize: '12px', 
-            fontWeight: 500, 
-            color: '#64748b', 
+            fontSize: '11px', 
+            color: '#6B7280', 
+            fontWeight: 400,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis'
           }}>
-            Radius around midpoint
+            Radius around the midpoint
           </span>
         </div>
         <div style={{ 
           fontSize: '11px', 
-          fontWeight: 700, 
+          fontWeight: 600, 
           color: '#4F46E5',
-          background: 'rgba(79, 70, 229, 0.08)',
-          padding: '1px 6px',
-          borderRadius: '4px',
+          background: '#EEF2FF',
+          padding: '2px 8px',
+          borderRadius: '6px',
           whiteSpace: 'nowrap',
           flexShrink: 0
         }}>

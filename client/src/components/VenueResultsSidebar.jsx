@@ -244,7 +244,7 @@ const VenueResultsSidebar = ({
           )}
 
           {/* Pagination - Scrollable */}
-          {totalPages > 1 && (
+          {totalPages > 1 && !loading && (
             <div style={{
               marginTop: '20px',
               paddingTop: '20px',
