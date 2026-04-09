@@ -277,6 +277,42 @@ Summary:`;
 
 // --- Routes ---
 
+/**
+ * Fetches autocomplete predictions using Google Places API (Autocomplete).
+ * @param {string} input - The user's input string.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of predictions.
+ */
+async function getAutocompletePredictions(input) {
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&components=country:in&key=${Maps_API_KEY}`;
+  try {
+    const response = await axios.get(url);
+    if (response.data.status === "OK") {
+      return response.data.predictions;
+    } else {
+      console.error(
+        "Autocomplete API error:",
+        response.data.status,
+        response.data.error_message
+      );
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching autocomplete predictions:", error.message);
+    return [];
+  }
+}
+
+// API endpoint for Autocomplete
+app.get("/api/autocomplete", async (req, res) => {
+  const { input } = req.query;
+  if (!input) {
+    return res.status(400).json({ error: "Missing required query parameter: input" });
+  }
+
+  const predictions = await getAutocompletePredictions(input);
+  res.json({ predictions });
+});
+
 // API endpoint to find a midway restaurant
 app.post("/api/find_midway_restaurant", async (req, res) => {
 

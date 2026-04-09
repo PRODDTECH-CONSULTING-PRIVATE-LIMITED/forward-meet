@@ -3,6 +3,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
 import GooglePlaceCardCompact from "./components/GooglePlacesCardCompact";
+import VenueDetailCard from "./components/VenueDetailCard";
 import Header from "./components/header";
 import LocationSelector from "./components/location-selector";
 import TrafficPrediction from "./components/TrafficPrediction";
@@ -134,19 +135,6 @@ const App = (props) => {
     };
   }, [mapsLoaded, userLocation]);
 
-  // Initialize autocomplete
-  useEffect(() => {
-    if (mapsLoaded && window.google?.maps?.places) {
-      console.log(
-        "Google Maps Places library available. Initializing autocomplete."
-      );
-      if (userLocation) {
-        initAutocomplete(true);
-      } else {
-        initAutocomplete(false);
-      }
-    }
-  }, [userLocation, mapsLoaded]);
 
   // Auto-trigger search when searchMode, searchRadius, or timeDifferenceMargin changes
   useEffect(() => {
@@ -305,73 +293,6 @@ const initMap = async () => {
   }
 };
 
-  // Function to initialize Google Places Autocomplete
-  const initAutocomplete = (useBounds = true) => {
-    if (window.google?.maps?.places) {
-      const autocompleteOptions = {
-        types: ["geocode", "establishment"],
-        componentRestrictions: { country: ["in"] },
-      };
-
-      if (useBounds && userLocation) {
-        const bounds = new window.google.maps.LatLngBounds(
-          new window.google.maps.LatLng(
-            userLocation.lat - 0.45,
-            userLocation.lng - 0.45
-          ),
-          new window.google.maps.LatLng(
-            userLocation.lat + 0.45,
-            userLocation.lng + 0.45
-          )
-        );
-        autocompleteOptions.bounds = bounds;
-      }
-
-      // Autocomplete for Location 1
-      if (location1InputRef.current) {
-        const autocomplete1 = new window.google.maps.places.Autocomplete(
-          location1InputRef.current,
-          autocompleteOptions
-        );
-        autocomplete1.addListener("place_changed", () => {
-          const place = autocomplete1.getPlace();
-          if (place.formatted_address) {
-            setLocation1(place.formatted_address);
-          } else if (place.name) {
-            setLocation1(place.name);
-          }
-          if (place.geometry && place.geometry.location) {
-            setLocation1Coords({
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            });
-          }
-        });
-      }
-
-      // Autocomplete for Location 2
-      if (location2InputRef.current) {
-        const autocomplete2 = new window.google.maps.places.Autocomplete(
-          location2InputRef.current,
-          autocompleteOptions
-        );
-        autocomplete2.addListener("place_changed", () => {
-          const place = autocomplete2.getPlace();
-          if (place.formatted_address) {
-            setLocation2(place.formatted_address);
-          } else if (place.name) {
-            setLocation2(place.name);
-          }
-          if (place.geometry && place.geometry.location) {
-            setLocation2Coords({
-              lat: place.geometry.location.lat(),
-              lng: place.geometry.location.lng(),
-            });
-          }
-        });
-      }
-    }
-  };
 
   // Helper function to show all markers and routes
   const showMarkersForAllPlaces = () => {
@@ -1098,14 +1019,6 @@ const initMap = async () => {
                 </div>
               </div> */}
 
-              {/* Detailed View */}
-              {/* {isDetailedView && (
-                <GooglePlaceCard
-                  placeId={detailedPlaceId}
-                  setDetailedPlaceId={setDetailedPlaceId}
-                  setIsDetailedView={setIsDetailedView}
-                />
-              )} */}
 
               {/* Restaurant Cards */}
               {/* {!isDetailedView && currentItems.map((location, index) => (
@@ -1201,6 +1114,7 @@ const initMap = async () => {
             onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             onVenueHover={(placeId) => setHoveredVenueId(placeId)}
             onVenueClick={(placeId) => {
+              console.log('Venue clicked in App.jsx:', placeId);
               setDetailedPlaceId(placeId);
               setIsDetailedView(true);
             }}
@@ -1231,6 +1145,17 @@ const initMap = async () => {
           </div>
         </div>
       </div>
+      {/* Modal/Detail Overlays */}
+      {isDetailedView && (
+        <VenueDetailCard
+          venue={midwayRestaurants.find(v => v.place_id === detailedPlaceId)}
+          onClose={() => {
+            console.log('Closing Detail Card');
+            setIsDetailedView(false);
+            setDetailedPlaceId(null);
+          }}
+        />
+      )}
     </div>
   );
 };

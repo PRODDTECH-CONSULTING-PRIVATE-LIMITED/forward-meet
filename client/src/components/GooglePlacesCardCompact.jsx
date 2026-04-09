@@ -1447,7 +1447,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) => {
+const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView, onClick }) => {
   const ref = useRef(null);
   const [photoUris, setPhotoUris] = useState([]);
   const [photosLoading, setPhotosLoading] = useState(false);
@@ -1571,7 +1571,10 @@ const GooglePlacesCardCompact = ({ placeId, locationInfo, setIsDetailedView }) =
         color: "#000",
       }}
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-      onClick={() => setIsDetailedView(false)}
+      onClick={() => {
+        if (onClick) onClick();
+        else if (setIsDetailedView) setIsDetailedView(true);
+      }}
     >
       {/* Venue Name and Travel Time Grid */}
       <div style={{ padding: "12px 12px 6px 12px" }}>

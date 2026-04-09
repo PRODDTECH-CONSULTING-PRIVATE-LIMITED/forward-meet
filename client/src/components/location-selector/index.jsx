@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { Select } from 'antd';
 import { MapPin } from 'lucide-react';
 import ParticipantCard from '../ParticipantCard';
 
@@ -8,167 +9,115 @@ const LocationSelector = ({
   setLocation1, 
   setLocation2, 
   location1InputRef, 
-  location2InputRef,
-  onInputsVisible,
-  userLocation
+  location2InputRef
 }) => {
-  const [tempLocation1, setTempLocation1] = useState(location1 || '');
-  const [tempLocation2, setTempLocation2] = useState(location2 || '');
+  const [data1, setData1] = useState([]);
+  const [data2, setData2] = useState([]);
+  const timeoutRef1 = useRef(null);
+  const timeoutRef2 = useRef(null);
 
-  // Initialize autocomplete for inline fields on mount
-  useEffect(() => {
-    // Sync internal state with props if they exist
-    setTempLocation1(location1 || '');
-    setTempLocation2(location2 || '');
-    
-    // Initialize autocomplete after a short delay to ensure refs are attached
-    const timer = setTimeout(() => {
-      initAutocomplete();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Sync autocomplete dropdown width with participant card width
-  useEffect(() => {
-    const syncDropdownWidth = () => {
-      const pacContainers = document.querySelectorAll('.pac-container');
-      const participantCards = document.querySelectorAll('.participant-card');
-      
-      if (pacContainers.length > 0 && participantCards.length > 0) {
-        pacContainers.forEach(container => {
-          // Get the width of the first participant card
-          const card = participantCards[0];
-          const cardWidth = card.offsetWidth;
-          
-          // Only set width, let Google Maps handle positioning
-          container.style.width = `${cardWidth}px`;
-        });
-      }
-    };
-
-    // Create a MutationObserver to watch for the autocomplete dropdown being added
-    const observer = new MutationObserver((mutations) => {
-      // Only sync when .pac-container is actually added (not on every DOM change)
-      const pacAdded = mutations.some(mutation => 
-        Array.from(mutation.addedNodes).some(node => 
-          node.classList && node.classList.contains('pac-container')
-        )
-      );
-      
-      if (pacAdded) {
-        syncDropdownWidth();
-      }
-    });
-
-    // Only observe direct children of body (not subtree) to reduce triggers
-    observer.observe(document.body, {
-      childList: true,
-      subtree: false
-    });
-
-    // Sync on window resize
-    window.addEventListener('resize', syncDropdownWidth);
-
-    // Initial sync
-    syncDropdownWidth();
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', syncDropdownWidth);
-    };
-  }, []);
-
-  // Initialize Google Places Autocomplete
-  const initAutocomplete = () => {
-    if (window.google?.maps?.places) {
-      const autocompleteOptions = {
-        types: ["geocode", "establishment"],
-        componentRestrictions: { country: ["in"] },
-      };
-
-      if (userLocation) {
-        const bounds = new window.google.maps.LatLngBounds(
-          new window.google.maps.LatLng(
-            userLocation.lat - 0.45,
-            userLocation.lng - 0.45
-          ),
-          new window.google.maps.LatLng(
-            userLocation.lat + 0.45,
-            userLocation.lng + 0.45
-          )
-        );
-        autocompleteOptions.bounds = bounds;
-      }
-
-      // Autocomplete for User A (Starting Location)
-      if (location1InputRef.current) {
-        const autocomplete1 = new window.google.maps.places.Autocomplete(
-          location1InputRef.current,
-          autocompleteOptions
-        );
-        autocomplete1.addListener("place_changed", () => {
-          const place = autocomplete1.getPlace();
-          const value = place.formatted_address || place.name || "";
-          setTempLocation1(value);
-          setLocation1(value);
-        });
-      }
-
-      // Autocomplete for User B (Destination Location)
-      if (location2InputRef.current) {
-        const autocomplete2 = new window.google.maps.places.Autocomplete(
-          location2InputRef.current,
-          autocompleteOptions
-        );
-        autocomplete2.addListener("place_changed", () => {
-          const place = autocomplete2.getPlace();
-          const value = place.formatted_address || place.name || "";
-          setTempLocation2(value);
-          setLocation2(value);
-        });
-      }
+  const fetchSuggestions = async (input, setData, timeoutRef) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
+    if (!input || input.length < 2) {
+      setData([]);
+      return;
+    }
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/autocomplete?input=${encodeURIComponent(input)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const predictions = data.predictions || [];
+          const options = predictions.map(s => {
+            const mainText = s.structured_formatting?.main_text || s.description.split(',')[0];
+            const secondaryText = s.structured_formatting?.secondary_text || s.description.split(',').slice(1).join(',').trim();
+            return {
+              value: s.description,
+              label: (
+                <div className="flex items-center gap-4 py-1">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#e5e7eb] rounded-full flex items-center justify-center">
+                    <MapPin size={16} className="text-black" />
+                  </div>
+                  <div className="flex flex-col flex-1 overflow-hidden">
+                    <span className="text-[14px] font-semibold text-gray-900 truncate">{mainText}</span>
+                    {secondaryText && (
+                      <span className="text-[12px] font-normal text-gray-500 truncate">{secondaryText}</span>
+                    )}
+                  </div>
+                </div>
+              )
+            };
+          });
+          setData(options);
+        }
+      } catch (e) {
+        console.error('Failed to fetch autocomplete:', e);
+      }
+    }, 300);
   };
-  // test
+
+  const NavArrow = (
+    <div className="text-black ml-1 pt-1 opacity-70">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </div>
+  );
 
   return (
-    <div className="space-y-4 w-full">
-      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-4 ml-0.5">
+    <div className="space-y-6 w-full relative">
+      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-2 ml-1">
         Participants
       </label>
       
-      <ParticipantCard
-        label="Person A"
-        value={tempLocation1}
-        onChange={(e) => {
-          setTempLocation1(e.target.value);
-          setLocation1(e.target.value);
-        }}
-        placeholder="e.g., Jayanagar, Bengaluru"
-        avatarClass="person-a"
-        onClear={() => {
-          setTempLocation1('');
-          setLocation1('');
-        }}
-        inputRef={location1InputRef}
-      />
+      <div className="relative w-full">
+        <ParticipantCard label="Person A" avatarClass="person-a">
+          <Select
+            ref={location1InputRef}
+            showSearch
+            allowClear
+            variant="borderless"
+            value={location1 || undefined}
+            placeholder="e.g., Jayanagar, Bengaluru"
+            style={{ width: '100%' }}
+            className="text-base font-medium"
+            defaultActiveFirstOption={false}
+            suffixIcon={NavArrow}
+            filterOption={false}
+            onSearch={(val) => fetchSuggestions(val, setData1, timeoutRef1)}
+            onChange={(val) => setLocation1(val || '')}
+            notFoundContent={null}
+            options={data1}
+            dropdownStyle={{ borderRadius: '12px', padding: '8px 0' }}
+          />
+        </ParticipantCard>
+      </div>
 
-      <ParticipantCard
-        label="Person B"
-        value={tempLocation2}
-        onChange={(e) => {
-          setTempLocation2(e.target.value);
-          setLocation2(e.target.value);
-        }}
-        placeholder="e.g., Indiranagar, Bengaluru"
-        avatarClass="person-b"
-        onClear={() => {
-          setTempLocation2('');
-          setLocation2('');
-        }}
-        inputRef={location2InputRef}
-      />
+      <div className="relative w-full mt-4">
+        <ParticipantCard label="Person B" avatarClass="person-b">
+          <Select
+            ref={location2InputRef}
+            showSearch
+            allowClear
+            variant="borderless"
+            value={location2 || undefined}
+            placeholder="e.g., Indiranagar, Bengaluru"
+            style={{ width: '100%' }}
+            className="text-base font-medium"
+            defaultActiveFirstOption={false}
+            suffixIcon={NavArrow}
+            filterOption={false}
+            onSearch={(val) => fetchSuggestions(val, setData2, timeoutRef2)}
+            onChange={(val) => setLocation2(val || '')}
+            notFoundContent={null}
+            options={data2}
+            dropdownStyle={{ borderRadius: '12px', padding: '8px 0' }}
+          />
+        </ParticipantCard>
+      </div>
     </div>
   );
 };

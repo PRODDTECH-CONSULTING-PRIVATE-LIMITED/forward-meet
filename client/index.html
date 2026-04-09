@@ -7,28 +7,14 @@
     <title>Midway Place Finder</title>
 
     <!-- This <script> will be replaced by Vite -->
+    <!-- Google Maps Platform Components -->
+    <gmpx-api-loader id="api-loader" v="beta" libraries="places,marker"></gmpx-api-loader>
     <script type="module">
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-      // Load Google Maps JavaScript API
-      const mapsParams = new URLSearchParams({
-        key: apiKey,
-        v: "beta",
-        libraries: "places"
-      });
-
-      const mapsScript = document.createElement("script");
-      mapsScript.src = `https://maps.googleapis.com/maps/api/js?${mapsParams.toString()}`;
-      mapsScript.async = true;
-      mapsScript.defer = true;
-      document.head.appendChild(mapsScript);
-
-      // Load Places Web Component
-      const placesScript = document.createElement("script");
-      placesScript.src = `https://www.gstatic.com/maps-platform/places-web-component/loader.js?apiKey=${apiKey}`;
-      placesScript.defer = true;
-      document.head.appendChild(placesScript);
+      const loader = document.getElementById('api-loader');
+      if (loader) loader.setAttribute('key', apiKey);
     </script>
+    <script type="module" src="https://unpkg.com/@googlemaps/extended-component-library@0.6.14/dist/index.min.js"></script>
 
     <!-- Optional: Hide 'Open in Maps' button -->
     <style>
