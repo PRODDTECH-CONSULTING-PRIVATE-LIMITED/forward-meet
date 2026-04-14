@@ -1,6 +1,7 @@
 /* ─── Dashboard Page Styles ─── */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
 
 .dashboard-page {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -11,63 +12,69 @@
 
 /* ─── Navbar ─── */
 .dash-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 48px;
+  padding: 16px 64px;
   background: #fff;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0f0f0;
   position: sticky;
   top: 0;
   z-index: 100;
 }
-.dash-nav-logo {
-  font-size: 22px;
-  font-weight: 800;
-  color: #111;
-  letter-spacing: -0.5px;
-}
-.dash-nav-links {
+
+.dash-nav-left {
   display: flex;
-  gap: 32px;
-  align-items: center;
+  justify-content: flex-start;
 }
-.dash-nav-links a {
-  font-size: 14px;
-  font-weight: 500;
-  color: #555;
-  text-decoration: none;
-  transition: color 0.15s;
+
+.dash-nav-center {
+  display: flex;
+  justify-content: center;
 }
-.dash-nav-links a:hover { color: #111; }
+
 .dash-nav-right {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  justify-content: flex-end;
+  gap: 32px;
 }
-.dash-nav-signin {
-  font-size: 14px;
+
+.dash-logo {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: -0.5px;
+}
+
+.dash-nav-link {
+  font-size: 15px;
   font-weight: 500;
-  color: #555;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 16px;
-  transition: color 0.15s;
+  color: #111;
+  text-decoration: none;
+  transition: opacity 0.2s;
 }
-.dash-nav-signin:hover { color: #111; }
-.dash-nav-cta {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
+
+.dash-nav-link:hover {
+  opacity: 0.7;
+}
+
+.dash-nav-link.active {
+  color: #2563eb;
+  font-weight: 700;
+  position: relative;
+}
+
+.dash-nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
   background: #2563eb;
-  border: none;
-  border-radius: 24px;
-  padding: 10px 24px;
-  cursor: pointer;
-  transition: background 0.15s;
+  border-radius: 2px;
 }
-.dash-nav-cta:hover { background: #1d4ed8; }
 
 /* ─── Hero ─── */
 .dash-hero {
@@ -98,7 +105,7 @@
 .dash-search {
   display: flex;
   align-items: center;
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   background: #fff;
   border-radius: 16px;
@@ -233,7 +240,7 @@
 /* ─── Filter Pills ─── */
 .dash-pills-section {
   background: #fff;
-  padding: 16px 24px 48px;
+  padding: 0px 24px 32px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -742,7 +749,12 @@
 }
 
 .dash-cal-day.selected {
-  background: #000;
+  background: #2563eb;
+  color: #fff;
+}
+
+.dash-cal-day.selected:hover {
+  background: #1d4ed8;
   color: #fff;
 }
 
@@ -836,3 +848,189 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ─── Detailed Recommendations Page ─── */
+.back-btn-details {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back-btn-details:hover {
+  background: #f1f5f9;
+}
+
+.details-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 100px 24px 80px;
+}
+
+.details-header {
+  margin-bottom: 64px;
+  text-align: center;
+}
+
+.details-header h1 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+
+.details-subtitle {
+  font-size: 18px;
+  color: #64748b;
+  max-width: 700px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.details-divider {
+  width: 60px;
+  height: 4px;
+  background: #2563eb;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.recommendation-row {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+  scroll-margin-top: 100px; /* Offset for sticky header */
+}
+
+@media (max-width: 768px) {
+  .recommendation-row {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
+.rec-image-card {
+  flex-shrink: 0;
+  width: 380px;
+  height: 280px;
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+  .rec-image-card {
+    width: 100%;
+    height: 240px;
+  }
+}
+
+.rec-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rec-number {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.rec-content {
+  flex: 1;
+}
+
+.rec-header {
+  margin-bottom: 16px;
+}
+
+.rec-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.rec-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2563eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rec-description {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.rec-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.rec-action-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rec-action-link.insta {
+  background: #fdf2f8;
+  color: #db2777;
+}
+
+.rec-action-link.insta:hover {
+  background: #fce7f3;
+  transform: translateY(-2px);
+}
+
+.rec-action-link.web {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.rec-action-link.web:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Car, Train, Coffee, UtensilsCrossed, Building2,
+  Car, Train, Coffee, UtensilsCrossed, Building2, Footprints, Bike, Beer, TreePine, Dumbbell,
   ArrowRightLeft, CalendarDays, ChevronDown, ArrowRight,
   Clock, SlidersHorizontal, Calendar, Navigation, MapPin
 } from 'lucide-react';
@@ -141,8 +141,9 @@ const CalendarPopup = ({ date, setDate, timeHour, setTimeHour, timeMin, setTimeM
 const Dashboard = () => {
   const navigate = useNavigate();
   const [travelMode, setTravelMode] = useState('driving');
-  const [placeType, setPlaceType] = useState('coffee');
+  const [placeType, setPlaceType] = useState('restaurant');
   const [activeTab, setActiveTab] = useState('time');
+  const [activeNav, setActiveNav] = useState('meeting');
   const [loc1, setLoc1] = useState('');
   const [loc2, setLoc2] = useState('');
 
@@ -256,10 +257,6 @@ const Dashboard = () => {
   const handleFindMidway = () => {
     if (!loc1.trim() || !loc2.trim()) return;
 
-    // Map Dashboard filter pill ids to backend/App.jsx expects
-    const venueMap = { coffee: 'cafe', dining: 'restaurant', coworking: 'coworking_space' };
-    const mappedPlaceType = venueMap[placeType] || 'restaurant';
-
     const year = scheduleDate.getFullYear();
     const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
     const day = String(scheduleDate.getDate()).padStart(2, '0');
@@ -274,7 +271,7 @@ const Dashboard = () => {
       loc1: loc1.trim(),
       loc2: loc2.trim(),
       travelMode: travelMode,
-      placeType: mappedPlaceType,
+      placeType: placeType,
       date: outDate,
       time: outTime
     });
@@ -312,24 +309,41 @@ const Dashboard = () => {
     <div className="dashboard-page">
       {/* ─── Navbar ─── */}
       <nav className="dash-nav">
-          {/* <a href="#how">How it Works</a> */}
-           <div className="dash-nav-logo">How it Works</div>
-        <div className="dash-nav-links">
-        <div className="dash-nav-logo">Midway</div>
+        <div className="dash-nav-left">
+          <a href="#how" className="dash-nav-link">How it Works</a>
+        </div>
+        <div className="dash-nav-center">
+          <div className="dash-logo">Midway</div>
         </div>
         <div className="dash-nav-right">
-          <a href="#pricing">We are meeting</a>
-          <a href="#pricing">Group Meet</a>
-          <a href="#corporate">I am travelling</a>
-          {/* <button className="dash-nav-signin">Sign In</button> */}
-          {/* <button className="dash-nav-cta">Create Account</button> */}
+          <a 
+            href="#meeting" 
+            className={`dash-nav-link ${activeNav === 'meeting' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveNav('meeting'); }}
+          >
+            We are meeting
+          </a>
+          <a 
+            href="#group" 
+            className={`dash-nav-link ${activeNav === 'group' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveNav('group'); }}
+          >
+            Group Meet
+          </a>
+          <a 
+            href="#travelling" 
+            className={`dash-nav-link ${activeNav === 'travelling' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveNav('travelling'); }}
+          >
+            I am travelling
+          </a>
         </div>
       </nav>
 
       {/* ─── Hero ─── */}
       <section className="dash-hero">
-        <h1>Meetings made <span>equidistant</span>.</h1>
-        <p>Optimized coordinate calculation for professional rendezvous based on travel time and transit logistics.</p>
+        <h1>Find your perfect <span>midpoint</span>.</h1>
+        <p>Calculate the fairest and most convenient meeting location for everyone, based on real-time traffic and transit logistics.</p>
 
         {/* Search Bar */}
         <div className="dash-search">
@@ -438,7 +452,12 @@ const Dashboard = () => {
       <div className="dash-pills-section">
         {/* Part 1: Transport mode segmented control */}
         <div className="dash-pills-segment">
-          {[{ id: 'driving', label: 'Driving', Icon: Car }, { id: 'transit', label: 'Transit', Icon: Train }].map(({ id, label, Icon }) => (
+          {[
+            { id: 'driving', label: 'Driving', Icon: Car },
+            { id: 'transit', label: 'Transit', Icon: Train },
+            { id: 'walking', label: 'Walk', Icon: Footprints },
+            { id: 'bicycling', label: 'Bike', Icon: Bike },
+          ].map(({ id, label, Icon }) => (
             <button
               key={id}
               className={`dash-pill-seg ${travelMode === id ? 'active' : ''}`}
@@ -452,7 +471,13 @@ const Dashboard = () => {
 
         {/* Part 2: Venue category individual pills */}
         <div className="dash-pills-venues">
-          {[{ id: 'coffee', label: 'Coffee', Icon: Coffee }, { id: 'dining', label: 'Dining', Icon: UtensilsCrossed }, { id: 'coworking', label: 'Coworking', Icon: Building2 }].map(({ id, label, Icon }) => (
+          {[
+            { id: 'restaurant', label: 'Restaurant', Icon: UtensilsCrossed },
+            { id: 'cafe', label: 'Cafe', Icon: Coffee },
+            { id: 'bar', label: 'Bar', Icon: Beer },
+            { id: 'park', label: 'Park', Icon: TreePine },
+            { id: 'gym', label: 'Gym', Icon: Dumbbell },
+          ].map(({ id, label, Icon }) => (
             <button
               key={id}
               className={`dash-pill-venue ${placeType === id ? 'active' : ''}`}
@@ -476,8 +501,8 @@ const Dashboard = () => {
 
         {/* Top Row — 2 large cards */}
         <div className="dash-cards-top">
-          <div className="dash-card dash-card-large">
-            <img src="/images/lupa_bengaluru.png" alt="Lupa Bengaluru" />
+          <div className="dash-card dash-card-large" onClick={() => navigate('/editors-recommendation#lupa-bengaluru')}>
+            <img src="/images/real/lupa.jpg" alt="Lupa Bengaluru" />
             <div className="dash-card-overlay">
               <div className="dash-card-badge top-rated">Top Rated</div>
               <div className="dash-card-rating">★ 4.9 (120 reviews)</div>
@@ -485,8 +510,8 @@ const Dashboard = () => {
               <div className="dash-card-desc">Modern European from risottos to bone marrow. A sprawling space with a welcoming courtyard in Tuscany style.</div>
             </div>
           </div>
-          <div className="dash-card dash-card-large">
-            <img src="/images/thirteenth_floor.png" alt="13th Floor Bar" />
+          <div className="dash-card dash-card-large" onClick={() => navigate('/editors-recommendation#13th-floor-bar')}>
+            <img src="/images/real/13th_floor.jpg" alt="13th Floor Bar" />
             <div className="dash-card-overlay">
               <div className="dash-card-title">13th Floor Bar</div>
               <div className="dash-card-desc">Iconic rooftop bar promising great ambience and the best views of the Bengaluru skyline.</div>
@@ -496,25 +521,25 @@ const Dashboard = () => {
 
         {/* Bottom Row — 3 small cards */}
         <div className="dash-cards-bottom">
-          <div className="dash-card dash-card-small">
-            <img src="/images/gilded_rail.png" alt="Kai" />
+          <div className="dash-card dash-card-small" onClick={() => navigate('/editors-recommendation#suzy-q')}>
+            <img src="/images/real/suzy_q.jpg" alt="Suzy Q" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">Kai</div>
-              <div className="dash-card-desc" style={{ fontSize: 11 }}>TRINITY CIRCLE · PANORAMIC</div>
+              <div className="dash-card-title">Suzy Q</div>
+              <div className="dash-card-desc" style={{ fontSize: 11 }}>CUNNINGHAM ROAD · GLOBAL FOOD</div>
             </div>
           </div>
-          <div className="dash-card dash-card-small">
-            <img src="/images/petal_yeast.png" alt="The Polo Club" />
+          <div className="dash-card dash-card-small" onClick={() => navigate('/editors-recommendation#the-polo-club')}>
+            <img src="/images/real/polo_club.jpg" alt="The Polo Club" />
             <div className="dash-card-overlay">
               <div className="dash-card-title">The Polo Club</div>
               <div className="dash-card-desc" style={{ fontSize: 11 }}>THE OBEROI · GARDEN</div>
             </div>
           </div>
-          <div className="dash-card dash-card-small">
-            <img src="/images/summit_lounge.png" alt="Olive Beach" />
+          <div className="dash-card dash-card-small" onClick={() => navigate('/editors-recommendation#spice-terrace')}>
+            <img src="/images/real/spice_terrace.jpg" alt="Spice Terrace" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">Olive Beach</div>
-              <div className="dash-card-desc" style={{ fontSize: 11 }}>WOOD STREET · MEDITERRANEAN</div>
+              <div className="dash-card-title">Spice Terrace</div>
+              <div className="dash-card-desc" style={{ fontSize: 11 }}>JW MARRIOTT · POOLSIDE</div>
             </div>
           </div>
         </div>
