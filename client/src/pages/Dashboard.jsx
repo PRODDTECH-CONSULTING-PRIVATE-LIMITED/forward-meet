@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Car, Train, Coffee, UtensilsCrossed, Building2,
@@ -6,6 +6,137 @@ import {
   Clock, SlidersHorizontal, Calendar, Navigation, MapPin
 } from 'lucide-react';
 import './dashboard.css';
+
+/* ── dropdown components borrowed from location-selector ── */
+const SuggestionItem = ({ s, onSelect, isHighlighted, onHover }) => {
+  const main = s.structured_formatting?.main_text || s.description.split(',')[0];
+  const secondary = s.structured_formatting?.secondary_text || s.description.split(',').slice(1).join(',').trim();
+  return (
+    <li
+      className="flex items-center transition-colors dash-suggestion-item"
+      style={{ padding: '12px 20px', cursor: 'pointer', backgroundColor: isHighlighted ? '#f3f3f3' : 'transparent', display: 'flex', gap: '16px' }}
+      onMouseDown={(e) => { e.preventDefault(); onSelect(s); }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f3f3f3'; onHover(); }}
+      onMouseLeave={(e) => { if (!isHighlighted) e.currentTarget.style.backgroundColor = 'transparent'; }}
+    >
+      <div
+        className="flex-shrink-0 flex items-center justify-center rounded-full"
+        style={{ width: 40, height: 40, backgroundColor: '#e8e8e8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: '9999px' }}
+      >
+        <MapPin size={18} color="#000" />
+      </div>
+      <div className="flex flex-col flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, textAlign: 'left' }}>
+        <span className="truncate" style={{ fontSize: 15, fontWeight: 700, color: '#000', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{main}</span>
+        {secondary && (
+          <span className="truncate" style={{ fontSize: 13, fontWeight: 400, color: '#6b6b6b', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{secondary}</span>
+        )}
+      </div>
+    </li>
+  );
+};
+
+const Dropdown = ({ options, onSelect, highlightedIndex, setHighlightedIndex }) =>
+  options.length > 0 ? (
+    <div
+      style={{
+        position: 'absolute',
+        left: 0, right: 0, top: '100%',
+        marginTop: 4,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+        zIndex: 50,
+        maxHeight: 340,
+        overflowY: 'auto',
+      }}
+    >
+      <ul style={{ padding: '4px 0', margin: 0, listStyle: 'none' }}>
+        {options.map((s, i) => (
+          <SuggestionItem
+            key={i}
+            s={s}
+            onSelect={onSelect}
+            isHighlighted={i === highlightedIndex}
+            onHover={() => setHighlightedIndex(i)}
+          />
+        ))}
+      </ul>
+    </div>
+  ) : null;
+
+/* ── Custom Calendar Popup ── */
+const CalendarPopup = ({ date, setDate, timeHour, setTimeHour, timeMin, setTimeMin, amPm, setAmPm, onClose }) => {
+  const [currentMonth, setCurrentMonth] = useState(date);
+  
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  
+  const days = [];
+  for (let i = 0; i < firstDay; i++) {
+    days.push({ day: prevMonthDays - firstDay + i + 1, isPrev: true });
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push({ day: i, isCurrent: true, isSelected: i === date.getDate() && month === date.getMonth() && year === date.getFullYear() });
+  }
+  
+  const remaining = 42 - days.length;
+  for (let i = 1; i <= remaining; i++) {
+    days.push({ day: i, isNext: true });
+  }
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  return (
+    <div className="dash-cal-popup" onClick={e => e.stopPropagation()}>
+      <div className="dash-cal-header">
+        <div className="dash-cal-title">{monthNames[month]} {year}</div>
+        <div className="dash-cal-nav">
+           <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}>{'<'}</button>
+           <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}>{'>'}</button>
+        </div>
+      </div>
+      
+      <div className="dash-cal-weekdays">
+         {['S','M','T','W','T','F','S'].map((d,i) => <span key={i}>{d}</span>)}
+      </div>
+      
+      <div className="dash-cal-grid">
+         {days.map((d, i) => (
+           <button 
+             key={i} 
+             className={`dash-cal-day ${d.isPrev||d.isNext ? 'faded' : ''} ${d.isSelected ? 'selected' : ''}`}
+             onClick={() => { if(d.isCurrent) setDate(new Date(year, month, d.day)) }}
+           >
+             {d.day}
+           </button>
+         ))}
+      </div>
+      
+      <div className="dash-cal-footer">
+        <div className="dash-cal-time-wrap">
+          <span className="dash-cal-time-label">TIME</span>
+          <input className="dash-cal-time-input" value={timeHour} onChange={e => setTimeHour(e.target.value)} />
+          <span style={{margin:'0 2px', fontWeight: 700}}>:</span>
+          <input className="dash-cal-time-input" value={timeMin} onChange={e => setTimeMin(e.target.value)} />
+          
+          <div className="dash-cal-ampm">
+            <button className={amPm==='AM'?'active':''} onClick={()=>setAmPm('AM')}>AM</button>
+            <button className={amPm==='PM'?'active':''} onClick={()=>setAmPm('PM')}>PM</button>
+          </div>
+        </div>
+        
+        <div className="dash-cal-actions">
+           
+           <button className="dash-cal-set" onClick={onClose}>SET</button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,18 +146,137 @@ const Dashboard = () => {
   const [loc1, setLoc1] = useState('');
   const [loc2, setLoc2] = useState('');
 
+  /* ── autocomplete state & logic ── */
+  const [query1, setQuery1] = useState('');
+  const [query2, setQuery2] = useState('');
+  const [options1, setOptions1] = useState([]);
+  const [options2, setOptions2] = useState([]);
+  const [focused1, setFocused1] = useState(false);
+  const [focused2, setFocused2] = useState(false);
+  const [highlightedIndex1, setHighlightedIndex1] = useState(-1);
+  const [highlightedIndex2, setHighlightedIndex2] = useState(-1);
+
+  const debounce1 = useRef(null);
+  const debounce2 = useRef(null);
+  const wrap1 = useRef(null);
+  const wrap2 = useRef(null);
+  const wrapSchedule = useRef(null);
+
+  /* ── Calendar state ── */
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState(() => new Date());
+  
+  const [schedHour, setSchedHour] = useState(() => {
+    let d = new Date(); d.setHours(d.getHours() + 1); 
+    const h = d.getHours() % 12 || 12; 
+    return String(h).padStart(2, '0');
+  });
+  
+  const [schedMin, setSchedMin] = useState("00");
+  
+  const [schedAmPm, setSchedAmPm] = useState(() => {
+    let d = new Date(); d.setHours(d.getHours() + 1); 
+    return d.getHours() >= 12 ? 'PM' : 'AM';
+  });
+
+  const formatSchedule = () => {
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const m = monthNames[scheduleDate.getMonth()];
+    const d = scheduleDate.getDate();
+    const y = scheduleDate.getFullYear();
+    return `${m} ${d}, ${y} • ${schedHour}:${schedMin} ${schedAmPm}`;
+  }
+
+  const fetchSuggestions = useCallback(async (input, setOptions) => {
+    if (!input || input.length < 2) { setOptions([]); return; }
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/autocomplete?input=${encodeURIComponent(input)}`
+      );
+      if (res.ok) {
+        const json = await res.json();
+        setOptions(json.predictions || []);
+      }
+    } catch (e) {
+      console.error('Autocomplete error:', e);
+    }
+  }, []);
+
+  const onSearch1 = useCallback((val) => {
+    setQuery1(val);
+    clearTimeout(debounce1.current);
+    debounce1.current = setTimeout(() => fetchSuggestions(val, setOptions1), 300);
+  }, [fetchSuggestions]);
+
+  const onSearch2 = useCallback((val) => {
+    setQuery2(val);
+    clearTimeout(debounce2.current);
+    debounce2.current = setTimeout(() => fetchSuggestions(val, setOptions2), 300);
+  }, [fetchSuggestions]);
+
+  const select1 = useCallback((s) => { setLoc1(s.description); setQuery1(s.description); setOptions1([]); setFocused1(false); }, []);
+  const select2 = useCallback((s) => { setLoc2(s.description); setQuery2(s.description); setOptions2([]); setFocused2(false); }, []);
+
+  useEffect(() => { setHighlightedIndex1(-1); }, [options1]);
+  useEffect(() => { setHighlightedIndex2(-1); }, [options2]);
+
+  const handleKeyDown1 = (e) => {
+    if (!options1.length) {
+      if (e.key === 'Enter') handleFindMidway();
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightedIndex1((prev) => (prev < options1.length - 1 ? prev + 1 : 0)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightedIndex1((prev) => (prev > 0 ? prev - 1 : options1.length - 1)); }
+    else if (e.key === 'Enter' && highlightedIndex1 >= 0) { e.preventDefault(); select1(options1[highlightedIndex1]); }
+    else if (e.key === 'Escape') setFocused1(false);
+  };
+
+  const handleKeyDown2 = (e) => {
+    if (!options2.length) {
+      if (e.key === 'Enter') handleFindMidway();
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightedIndex2((prev) => (prev < options2.length - 1 ? prev + 1 : 0)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightedIndex2((prev) => (prev > 0 ? prev - 1 : options2.length - 1)); }
+    else if (e.key === 'Enter' && highlightedIndex2 >= 0) { e.preventDefault(); select2(options2[highlightedIndex2]); }
+    else if (e.key === 'Escape') setFocused2(false);
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrap1.current && !wrap1.current.contains(e.target)) setFocused1(false);
+      if (wrap2.current && !wrap2.current.contains(e.target)) setFocused2(false);
+      if (wrapSchedule.current && !wrapSchedule.current.contains(e.target)) setShowCalendar(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+
   const handleFindMidway = () => {
     if (!loc1.trim() || !loc2.trim()) return;
-    
+
     // Map Dashboard filter pill ids to backend/App.jsx expects
     const venueMap = { coffee: 'cafe', dining: 'restaurant', coworking: 'coworking_space' };
     const mappedPlaceType = venueMap[placeType] || 'restaurant';
+
+    const year = scheduleDate.getFullYear();
+    const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
+    const day = String(scheduleDate.getDate()).padStart(2, '0');
+    const outDate = `${year}-${month}-${day}`;
+
+    let h = parseInt(schedHour, 10) || 0;
+    if (schedAmPm === 'PM' && h < 12) h += 12;
+    if (schedAmPm === 'AM' && h === 12) h = 0;
+    const outTime = `${String(h).padStart(2, '0')}:${String(schedMin).padStart(2, '0')}`;
 
     const params = new URLSearchParams({
       loc1: loc1.trim(),
       loc2: loc2.trim(),
       travelMode: travelMode,
-      placeType: mappedPlaceType
+      placeType: mappedPlaceType,
+      date: outDate,
+      time: outTime
     });
     
     navigate(`/venues?${params.toString()}`);
@@ -84,7 +334,7 @@ const Dashboard = () => {
         {/* Search Bar */}
         <div className="dash-search">
           {/* Start Point A */}
-          <div className="dash-search-field">
+          <div className="dash-search-field" ref={wrap1} style={{ position: 'relative' }}>
             <Navigation className="field-icon" size={18} />
             <div className="field-input">
               <span className="field-label">Start Point A</span>
@@ -92,24 +342,37 @@ const Dashboard = () => {
                 className="field-input-text"
                 type="text"
                 placeholder="Address, City or Zip"
-                value={loc1}
-                onChange={e => setLoc1(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleFindMidway()}
+                value={query1}
+                onChange={(e) => onSearch1(e.target.value)}
+                onFocus={() => { setFocused1(true); if (query1 === loc1) fetchSuggestions(query1, setOptions1); }}
+                onKeyDown={handleKeyDown1}
               />
             </div>
+            {focused1 && (
+              <Dropdown
+                options={options1}
+                onSelect={select1}
+                highlightedIndex={highlightedIndex1}
+                setHighlightedIndex={setHighlightedIndex1}
+              />
+            )}
           </div>
 
           {/* Swap Button */}
           <button 
             className="dash-search-swap" 
             title="Swap locations"
-            onClick={() => { const temp = loc1; setLoc1(loc2); setLoc2(temp); }}
+            onClick={() => {
+              const tempQuery = query1; const tempLoc = loc1;
+              setQuery1(query2); setLoc1(loc2);
+              setQuery2(tempQuery); setLoc2(tempLoc);
+            }}
           >
             <span className="swap-icon">⇄</span>
           </button>
 
           {/* Start Point B */}
-          <div className="dash-search-field">
+          <div className="dash-search-field" ref={wrap2} style={{ position: 'relative' }}>
             <MapPin className="field-icon" size={18} />
             <div className="field-input">
               <span className="field-label">Start Point B</span>
@@ -117,32 +380,49 @@ const Dashboard = () => {
                 className="field-input-text"
                 type="text"
                 placeholder="Address, City or Zip"
-                value={loc2}
-                onChange={e => setLoc2(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleFindMidway()}
+                value={query2}
+                onChange={(e) => onSearch2(e.target.value)}
+                onFocus={() => { setFocused2(true); if (query2 === loc2) fetchSuggestions(query2, setOptions2); }}
+                onKeyDown={handleKeyDown2}
               />
             </div>
+            {focused2 && (
+              <Dropdown
+                options={options2}
+                onSelect={select2}
+                highlightedIndex={highlightedIndex2}
+                setHighlightedIndex={setHighlightedIndex2}
+              />
+            )}
           </div>
 
           <div className="dash-search-divider" />
 
           {/* Schedule */}
-          <div className="dash-search-schedule">
+          <div className="dash-search-schedule" ref={wrapSchedule} style={{ position: 'relative' }}>
             <CalendarDays className="field-icon" size={18} />
-            <div className="field-input">
+            <div className="field-input" style={{ cursor: 'pointer' }} onClick={() => setShowCalendar(true)}>
               <span className="field-label">Schedule</span>
               <span className="field-placeholder" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                Now
-                <ChevronDown size={14} style={{ color: '#aaa' }} />
+                <span style={{ color: '#1e293b', fontWeight: 500 }}>{formatSchedule()}</span>
+                <ChevronDown size={14} style={{ color: '#aaa', marginLeft: 'auto', marginRight: 16 }} />
               </span>
             </div>
+            {showCalendar && (
+              <CalendarPopup 
+                date={scheduleDate} setDate={setScheduleDate}
+                timeHour={schedHour} setTimeHour={setSchedHour}
+                timeMin={schedMin} setTimeMin={setSchedMin}
+                amPm={schedAmPm} setAmPm={setSchedAmPm}
+                onClose={() => setShowCalendar(false)}
+              />
+            )}
           </div>
 
           {/* Find Midway Button */}
           <button 
             className="dash-search-btn" 
             onClick={handleFindMidway}
-            disabled={!loc1.trim() || !loc2.trim()}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="12" fill="white"/>
@@ -189,27 +469,27 @@ const Dashboard = () => {
       <section className="dash-picks">
         <div className="dash-picks-header">
           <h2>Editor&apos;s Picks</h2>
-          <a href="#all">View all locations <ArrowRight size={16} /></a>
+          <a href="/editors-recommendation">View all locations <ArrowRight size={16} /></a>
         </div>
         <div className="dash-picks-underline" />
-        <p className="dash-picks-sub">Structured recommendations for high-efficiency collaboration.</p>
+        <p className="dash-picks-sub">Curated outdoor restaurants for high-efficiency collaboration.</p>
 
         {/* Top Row — 2 large cards */}
         <div className="dash-cards-top">
           <div className="dash-card dash-card-large">
-            <img src="/images/glass_conservatory.png" alt="The Glass Conservatory" />
+            <img src="/images/lupa_bengaluru.png" alt="Lupa Bengaluru" />
             <div className="dash-card-overlay">
               <div className="dash-card-badge top-rated">Top Rated</div>
               <div className="dash-card-rating">★ 4.9 (120 reviews)</div>
-              <div className="dash-card-title">The Glass Conservatory</div>
-              <div className="dash-card-desc">An architectural marvel featuring botanical displays and locally-sourced specialty coffee. Perfect for creative brainstorming.</div>
+              <div className="dash-card-title">Lupa Bengaluru</div>
+              <div className="dash-card-desc">Modern European from risottos to bone marrow. A sprawling space with a welcoming courtyard in Tuscany style.</div>
             </div>
           </div>
           <div className="dash-card dash-card-large">
-            <img src="/images/nexus_hub.png" alt="Nexus Hub" />
+            <img src="/images/thirteenth_floor.png" alt="13th Floor Bar" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">Nexus Hub</div>
-              <div className="dash-card-desc">Quiet, high-speed connectivity with premium espresso service.</div>
+              <div className="dash-card-title">13th Floor Bar</div>
+              <div className="dash-card-desc">Iconic rooftop bar promising great ambience and the best views of the Bengaluru skyline.</div>
             </div>
           </div>
         </div>
@@ -217,24 +497,24 @@ const Dashboard = () => {
         {/* Bottom Row — 3 small cards */}
         <div className="dash-cards-bottom">
           <div className="dash-card dash-card-small">
-            <img src="/images/gilded_rail.png" alt="The Gilded Rail" />
+            <img src="/images/gilded_rail.png" alt="Kai" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">The Gilded Rail</div>
-              <div className="dash-card-desc" style={{ fontSize: 11 }}>SURE · REFINED</div>
+              <div className="dash-card-title">Kai</div>
+              <div className="dash-card-desc" style={{ fontSize: 11 }}>TRINITY CIRCLE · PANORAMIC</div>
             </div>
           </div>
           <div className="dash-card dash-card-small">
-            <img src="/images/petal_yeast.png" alt="Petal & Yeast" />
+            <img src="/images/petal_yeast.png" alt="The Polo Club" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">Petal &amp; Yeast</div>
-              <div className="dash-card-desc" style={{ fontSize: 11 }}>SURE · VIBRANT</div>
+              <div className="dash-card-title">The Polo Club</div>
+              <div className="dash-card-desc" style={{ fontSize: 11 }}>THE OBEROI · GARDEN</div>
             </div>
           </div>
           <div className="dash-card dash-card-small">
-            <img src="/images/summit_lounge.png" alt="Summit Lounge" />
+            <img src="/images/summit_lounge.png" alt="Olive Beach" />
             <div className="dash-card-overlay">
-              <div className="dash-card-title">Summit Lounge</div>
-              <div className="dash-card-desc" style={{ fontSize: 11 }}>SURE · FOCUSED</div>
+              <div className="dash-card-title">Olive Beach</div>
+              <div className="dash-card-desc" style={{ fontSize: 11 }}>WOOD STREET · MEDITERRANEAN</div>
             </div>
           </div>
         </div>

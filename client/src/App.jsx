@@ -37,10 +37,14 @@ const App = (props) => {
   const [userLocation, setUserLocation] = useState(null);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => {
+    const queryDate = new URLSearchParams(window.location.search).get('date');
+    if (queryDate) return queryDate;
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
   const [selectedTime, setSelectedTime] = useState(() => {
+    const queryTime = new URLSearchParams(window.location.search).get('time');
+    if (queryTime) return queryTime;
     const now = new Date();
     now.setHours(now.getHours() + 1);
     now.setMinutes(0);

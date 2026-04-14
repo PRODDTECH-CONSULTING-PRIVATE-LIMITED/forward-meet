@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MantineProvider } from "@mantine/core";
 import App from "./App.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import EditorsRecommendation from "./pages/EditorsRecommendation.jsx";
 import "./index.css";
 import "./output.css";
 
@@ -15,6 +16,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="/" element={<App />} />
           <Route path="/venues" element={<App />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/editors-recommendation" element={<EditorsRecommendation />} />
         </Routes>
       </BrowserRouter>
     </MantineProvider>
