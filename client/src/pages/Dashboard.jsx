@@ -162,6 +162,8 @@ const Dashboard = () => {
   const wrap1 = useRef(null);
   const wrap2 = useRef(null);
   const wrapSchedule = useRef(null);
+  const input1Ref = useRef(null);
+  const input2Ref = useRef(null);
 
   /* ── Calendar state ── */
   const [showCalendar, setShowCalendar] = useState(false);
@@ -215,8 +217,21 @@ const Dashboard = () => {
     debounce2.current = setTimeout(() => fetchSuggestions(val, setOptions2), 300);
   }, [fetchSuggestions]);
 
-  const select1 = useCallback((s) => { setLoc1(s.description); setQuery1(s.description); setOptions1([]); setFocused1(false); }, []);
-  const select2 = useCallback((s) => { setLoc2(s.description); setQuery2(s.description); setOptions2([]); setFocused2(false); }, []);
+  const select1 = useCallback((s) => { 
+    setLoc1(s.description); 
+    setQuery1(s.description); 
+    setOptions1([]); 
+    setFocused1(false); 
+    input1Ref.current?.blur();
+  }, []);
+  
+  const select2 = useCallback((s) => { 
+    setLoc2(s.description); 
+    setQuery2(s.description); 
+    setOptions2([]); 
+    setFocused2(false); 
+    input2Ref.current?.blur();
+  }, []);
 
   useEffect(() => { setHighlightedIndex1(-1); }, [options1]);
   useEffect(() => { setHighlightedIndex2(-1); }, [options2]);
@@ -351,8 +366,9 @@ const Dashboard = () => {
           <div className="dash-search-field" ref={wrap1} style={{ position: 'relative' }}>
             <Navigation className="field-icon" size={18} />
             <div className="field-input">
-              <span className="field-label">Start Point A</span>
+              <span className="field-label">Your Location</span>
               <input
+                ref={input1Ref}
                 className="field-input-text"
                 type="text"
                 placeholder="Address, City or Zip"
@@ -389,8 +405,9 @@ const Dashboard = () => {
           <div className="dash-search-field" ref={wrap2} style={{ position: 'relative' }}>
             <MapPin className="field-icon" size={18} />
             <div className="field-input">
-              <span className="field-label">Start Point B</span>
+              <span className="field-label">Friend's Location</span>
               <input
+                ref={input2Ref}
                 className="field-input-text"
                 type="text"
                 placeholder="Address, City or Zip"
@@ -415,12 +432,12 @@ const Dashboard = () => {
           {/* Schedule */}
           <div className="dash-search-schedule" ref={wrapSchedule} style={{ position: 'relative' }}>
             <CalendarDays className="field-icon" size={18} />
-            <div className="field-input" style={{ cursor: 'pointer' }} onClick={() => setShowCalendar(true)}>
-              <span className="field-label">Schedule</span>
-              <span className="field-placeholder" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div className="field-input" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => setShowCalendar(prev => !prev)}>
+              <span className="field-label">Meeting Time</span>
+              <div className="field-placeholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 6, width: '100%' }}>
                 <span style={{ color: '#1e293b', fontWeight: 500 }}>{formatSchedule()}</span>
-                <ChevronDown size={14} style={{ color: '#aaa', marginLeft: 'auto', marginRight: 16 }} />
-              </span>
+                <ChevronDown size={14} style={{ color: '#aaa', marginLeft: 'auto' }} />
+              </div>
             </div>
             {showCalendar && (
               <CalendarPopup 
