@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import GooglePlaceCard from "./components/GooglePlacesCard";
@@ -20,8 +21,8 @@ const App = (props) => {
   // ALL HOOKS AT THE TOP - NEVER AFTER CONDITIONAL RETURNS
   // State variables for input locations, search results, loading status, and errors
   const [showFilters, setShowFilters] = useState(true);
-  const [location1, setLocation1] = useState("");
-  const [location2, setLocation2] = useState("");
+  const [location1, setLocation1] = useState(() => new URLSearchParams(window.location.search).get('loc1') || "");
+  const [location2, setLocation2] = useState(() => new URLSearchParams(window.location.search).get('loc2') || "");
   const [location1Coords, setLocation1Coords] = useState(null);
   const [location2Coords, setLocation2Coords] = useState(null);
   const [midwayRestaurants, setMidwayRestaurants] = useState([]);
@@ -30,9 +31,9 @@ const App = (props) => {
   const [invitationDraft, setInvitationDraft] = useState("");
   const [generatingInvitation, setGeneratingInvitation] = useState(false);
   const [invitationError, setInvitationError] = useState("");
-  const [searchMode, setSearchMode] = useState("time");
-  const [searchRadius, setSearchRadius] = useState(2);
-  const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(10);
+  const [searchMode, setSearchMode] = useState(() => new URLSearchParams(window.location.search).get('searchMode') || "time");
+  const [searchRadius, setSearchRadius] = useState(() => parseInt(new URLSearchParams(window.location.search).get('radius') || "2", 10));
+  const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(() => parseInt(new URLSearchParams(window.location.search).get('margin') || "10", 10));
   const [userLocation, setUserLocation] = useState(null);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -45,10 +46,17 @@ const App = (props) => {
     now.setMinutes(0);
     return now.toTimeString().slice(0, 5);
   });
-  const [placeType, setPlaceType] = useState("restaurant");
-  const [travelMode, setTravelMode] = useState("driving");
+  const [placeType, setPlaceType] = useState(() => new URLSearchParams(window.location.search).get('placeType') || "restaurant");
+  const [travelMode, setTravelMode] = useState(() => new URLSearchParams(window.location.search).get('travelMode') || "driving");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // On mount, if URL has parameters, auto-trigger a search once places wrap loads
+  const autoSearchFired = useRef(false);
+
 
   // Refs
   const mapRef = useRef(null);
@@ -144,15 +152,26 @@ const App = (props) => {
       return;
     }
     
-    // Only trigger if we have valid locations
+    // Only trigger if we have valid locations and we are on /venues
     const hasValidLocations = (location1 || location1InputRef.current?.value) && 
                                (location2 || location2InputRef.current?.value);
     
-    if (hasValidLocations && !loading) {
+    if (hasValidLocations && !loading && location.pathname === '/venues') {
       // Trigger search with the new parameters
       handleSearch({ preventDefault: () => {} });
     }
   }, [searchMode, searchRadius, timeDifferenceMargin]); // Watch all filter changes
+
+  // Auto-search logic when loaded directly with URL params
+  useEffect(() => {
+    if (placesLoaded && mapsLoaded && !autoSearchFired.current) {
+      const hasParams = location1 && location2;
+      if (hasParams && location.pathname === '/venues') {
+        autoSearchFired.current = true;
+        handleSearch({ preventDefault: () => {} });
+      }
+    }
+  }, [placesLoaded, mapsLoaded]);
 
 const cleanMapStyles = [
   { featureType: "poi", stylers: [{ visibility: "off" }] },
@@ -579,6 +598,30 @@ const initMap = async () => {
   // Search function
   const handleSearch = async (e) => {
     e.preventDefault();
+
+    const loc1Val = location1InputRef.current?.value || location1;
+    const loc2Val = location2InputRef.current?.value || location2;
+
+    // Construct query parameters
+    const params = new URLSearchParams({
+      loc1: loc1Val,
+      loc2: loc2Val,
+      searchMode,
+      travelMode,
+      placeType,
+      radius: searchRadius,
+      margin: timeDifferenceMargin
+    });
+
+    if (location.pathname !== '/venues') {
+      navigate(`/venues?${params.toString()}`);
+      // return to let the navigate trigger re-render, 
+      // but we wait for it to process the next step or we can perform search immediately
+    } else {
+      // we are on venues page but parameters might have updated
+      navigate(`?${params.toString()}`, { replace: true });
+    }
+
     setLoading(true);
     setError("");
     // setMidwayRestaurants([]); // Preserve markers while loading
