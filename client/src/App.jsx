@@ -15,6 +15,9 @@ import SearchRadiusSlider from "./components/SearchRadiusSlider";
 import TimeDifferenceSlider from "./components/TimeDifferenceSlider";
 import TravelModeSelector from "./components/TravelModeSelector";
 import VenueResultsSidebar from "./components/VenueResultsSidebar";
+import { Navigation, SlidersHorizontal, Calendar } from "lucide-react";
+import MapControls from "./components/MapControls";
+import "./MapOverlay.css";
 
 // Main App component
 const App = (props) => {
@@ -87,6 +90,10 @@ const App = (props) => {
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [hoveredVenueId, setHoveredVenueId] = useState(null);
+  
+  // Custom Map Controls State
+  const [mapType, setMapType] = useState('roadmap');
+  const [is3D, setIs3D] = useState(false);
   
   // Track initial mount to avoid triggering search on first render
   const isInitialMount = useRef(true);
@@ -342,15 +349,39 @@ const initMap = async () => {
       position: loc1,
       map,
       title: "Location 1",
-      label: "1",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: "#0B57D0",
+        fillOpacity: 1,
+        strokeColor: "#FFFFFF",
+        strokeWeight: 2,
+        scale: 18
+      },
+      label: {
+        text: "A",
+        color: "white",
+        fontWeight: "bold",
+        fontSize: "14px"
+      }
     });
     const loc2Marker = new window.google.maps.Marker({
       position: loc2,
       map,
       title: "Location 2",
-      label: "2",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: "#0B57D0",
+        fillOpacity: 1,
+        strokeColor: "#FFFFFF",
+        strokeWeight: 2,
+        scale: 18
+      },
+      label: {
+        text: "B",
+        color: "white",
+        fontWeight: "bold",
+        fontSize: "14px"
+      }
     });
 
     newMarkers.push(loc1Marker, loc2Marker);
@@ -377,11 +408,9 @@ const initMap = async () => {
         position: coords,
         map,
         title: restaurant.name,
-        label: String.fromCharCode(65 + index),
         icon: { 
-          url: "/placeholder.png" ,
-          scaledSize: new window.google.maps.Size(40, 40),
-          anchor: new window.google.maps.Point(20, 40)
+          url: "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
+          scaledSize: new window.google.maps.Size(32, 32)
         }
       });
 
@@ -434,6 +463,14 @@ const initMap = async () => {
       destination: loc2,
       travelMode: "DRIVING",
     };
+
+    directionsRenderer.setOptions({
+      polylineOptions: {
+        strokeColor: "#0B57D0",
+        strokeOpacity: 0.8,
+        strokeWeight: 6,
+      }
+    });
     
     if (midwayRestaurants.length > 0) {
       routeOptions.waypoints = [{
@@ -502,23 +539,50 @@ const initMap = async () => {
       position: loc1Coords,
       map,
       title: "Location 1",
-      label: "1",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: "#0B57D0",
+        fillOpacity: 1,
+        strokeColor: "#FFFFFF",
+        strokeWeight: 2,
+        scale: 18
+      },
+      label: {
+        text: "A",
+        color: "white",
+        fontWeight: "bold",
+        fontSize: "14px"
+      }
     });
     
     const loc2Marker = new window.google.maps.Marker({
       position: loc2Coords,
       map,
       title: "Location 2", 
-      label: "2",
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: "#0B57D0",
+        fillOpacity: 1,
+        strokeColor: "#FFFFFF",
+        strokeWeight: 2,
+        scale: 18
+      },
+      label: {
+        text: "B",
+        color: "white",
+        fontWeight: "bold",
+        fontSize: "14px"
+      }
     });
 
     const selectedMarker = new window.google.maps.Marker({
       position: selectedPlaceCoords,
       map,
       title: selected.name,
-      icon: { url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }
+      icon: { 
+        url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        scaledSize: new window.google.maps.Size(32, 32)
+      }
     });
 
     newMarkers.push(loc1Marker, loc2Marker, selectedMarker);
@@ -1132,6 +1196,7 @@ const initMap = async () => {
 
       {/* RIGHT PANEL: Google Map */}
       <div
+        className="relative shadow-inner"
         style={{
           position: "fixed",
           right: 0,
@@ -1141,6 +1206,27 @@ const initMap = async () => {
           zIndex: 1,
         }}
       >
+        <MapControls 
+          isSatellite={mapType === 'satellite'}
+          is3D={is3D}
+          onToggleMapType={() => {
+            const nextType = mapType === 'roadmap' ? 'satellite' : 'roadmap';
+            setMapType(nextType);
+            map?.setMapTypeId(nextType);
+          }}
+          onFullscreen={() => {
+            if (mapRef.current.requestFullscreen) mapRef.current.requestFullscreen();
+            else if (mapRef.current.webkitRequestFullscreen) mapRef.current.webkitRequestFullscreen();
+            else if (mapRef.current.msRequestFullscreen) mapRef.current.msRequestFullscreen();
+          }}
+          onZoomIn={() => map?.setZoom(map.getZoom() + 1)}
+          onZoomOut={() => map?.setZoom(map.getZoom() - 1)}
+          onToggle3D={() => {
+            const next3D = !is3D;
+            setIs3D(next3D);
+            map?.setTilt(next3D ? 45 : 0);
+          }}
+        />
         <div
           ref={mapRef}
           className="w-full h-full"
@@ -1181,16 +1267,6 @@ const initMap = async () => {
             onTimeDifferenceMarginChange={setTimeDifferenceMargin}
           />
         )}
-        
-        {/* Map Status Indicator */}
-        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-gray-200 z-10">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-gray-700">
-              Map Active
-            </span>
-          </div>
-        </div>
       </div>
       {/* Modal/Detail Overlays */}
       {isDetailedView && (

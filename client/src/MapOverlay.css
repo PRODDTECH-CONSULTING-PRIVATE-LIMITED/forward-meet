@@ -1,0 +1,91 @@
+.map-controls-container {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 50;
+}
+
+.map-control-group {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.map-control-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  items-center: center;
+  justify-content: center;
+  background: transparent;
+  color: #475569;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.map-control-button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0B57D0;
+  transform: translateY(-1px);
+}
+
+.map-control-button.active {
+  background: #0B57D0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(11, 87, 208, 0.3);
+}
+
+.map-control-button.active:hover {
+  background: #0842a0;
+  color: white;
+}
+
+.map-type-toggle {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.map-type-button {
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+  font-family: 'Outfit', sans-serif;
+}
+
+.map-type-button.active {
+  background: #0B57D0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(11, 87, 208, 0.25);
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
