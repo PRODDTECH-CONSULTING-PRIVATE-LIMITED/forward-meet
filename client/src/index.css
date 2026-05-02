@@ -1,5 +1,68 @@
 @import "tailwindcss";
 
+@theme {
+  --color-tertiary-dim: #00557b;
+  --color-secondary-fixed-dim: #ffb28a;
+  --color-background: #f5f7f9;
+  --color-primary-dim: #0046bb;
+  --color-primary: #0050d4;
+  --color-on-error-container: #570008;
+  --color-outline-variant: #abadaf;
+  --color-on-secondary-fixed: #5b2400;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface: #2c2f31;
+  --color-on-tertiary: #e9f4ff;
+  --color-on-secondary: #fff0e9;
+  --color-error-dim: #9f0519;
+  --color-inverse-surface: #0b0f10;
+  --color-secondary-container: #ffc5a8;
+  --color-primary-container: #7b9cff;
+  --color-secondary: #994100;
+  --color-tertiary-fixed-dim: #25adf1;
+  --color-on-surface-variant: #595c5e;
+  --color-on-tertiary-container: #00344d;
+  --color-primary-fixed-dim: #658eff;
+  --color-tertiary: #00628c;
+  --color-surface-container: #e5e9eb;
+  --color-inverse-on-surface: #9a9d9f;
+  --color-surface-tint: #0050d4;
+  --color-surface: #f5f7f9;
+  --color-error: #b31b25;
+  --color-inverse-primary: #618bff;
+  --color-surface-dim: #d0d5d8;
+  --color-secondary-fixed: #ffc5a8;
+  --color-surface-variant: #d9dde0;
+  --color-on-primary-container: #001e5a;
+  --color-primary-fixed: #7b9cff;
+  --color-surface-bright: #f5f7f9;
+  --color-on-primary: #f1f2ff;
+  --color-on-primary-fixed-variant: #00266e;
+  --color-on-error: #ffefee;
+  --color-on-background: #2c2f31;
+  --color-surface-container-low: #eef1f3;
+  --color-outline: #747779;
+  --color-on-tertiary-fixed-variant: #003d5a;
+  --color-tertiary-fixed: #40bbff;
+  --color-on-secondary-fixed-variant: #883900;
+  --color-secondary-dim: #863800;
+  --color-on-primary-fixed: #000000;
+  --color-surface-container-highest: #d9dde0;
+  --color-error-container: #fb5151;
+  --color-on-secondary-container: #793200;
+  --color-tertiary-container: #40bbff;
+  --color-on-tertiary-fixed: #001a29;
+  --color-surface-container-high: #dfe3e6;
+
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+
+  --radius: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
+}
+
 
 :root {
   font-family: 'Outfit', 'DM Sans', 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;

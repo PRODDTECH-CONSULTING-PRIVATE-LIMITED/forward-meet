@@ -18,14 +18,18 @@ import VenueResultsSidebar from "./components/VenueResultsSidebar";
 import { Navigation, SlidersHorizontal, Calendar } from "lucide-react";
 import MapControls from "./components/MapControls";
 import "./MapOverlay.css";
+import { customMapStyle } from "./placeCard/mapStyles";
 
 // Main App component
 const App = (props) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   // ALL HOOKS AT THE TOP - NEVER AFTER CONDITIONAL RETURNS
   // State variables for input locations, search results, loading status, and errors
   const [showFilters, setShowFilters] = useState(true);
-  const [location1, setLocation1] = useState(() => new URLSearchParams(window.location.search).get('loc1') || "");
-  const [location2, setLocation2] = useState(() => new URLSearchParams(window.location.search).get('loc2') || "");
+  const [location1, setLocation1] = useState(() => location.state?.loc1 || new URLSearchParams(window.location.search).get('loc1') || "");
+  const [location2, setLocation2] = useState(() => location.state?.loc2 || new URLSearchParams(window.location.search).get('loc2') || "");
   const [location1Coords, setLocation1Coords] = useState(null);
   const [location2Coords, setLocation2Coords] = useState(null);
   const [midwayRestaurants, setMidwayRestaurants] = useState([]);
@@ -34,32 +38,29 @@ const App = (props) => {
   const [invitationDraft, setInvitationDraft] = useState("");
   const [generatingInvitation, setGeneratingInvitation] = useState(false);
   const [invitationError, setInvitationError] = useState("");
-  const [searchMode, setSearchMode] = useState(() => new URLSearchParams(window.location.search).get('searchMode') || "time");
-  const [searchRadius, setSearchRadius] = useState(() => parseInt(new URLSearchParams(window.location.search).get('radius') || "2", 10));
-  const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(() => parseInt(new URLSearchParams(window.location.search).get('margin') || "10", 10));
+  const [searchMode, setSearchMode] = useState(() => location.state?.searchMode || new URLSearchParams(window.location.search).get('searchMode') || "time");
+  const [searchRadius, setSearchRadius] = useState(() => parseInt(location.state?.radius || new URLSearchParams(window.location.search).get('radius') || "2", 10));
+  const [timeDifferenceMargin, setTimeDifferenceMargin] = useState(() => parseInt(location.state?.margin || new URLSearchParams(window.location.search).get('margin') || "10", 10));
   const [userLocation, setUserLocation] = useState(null);
   const [showGeolocationPrompt, setShowGeolocationPrompt] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => {
-    const queryDate = new URLSearchParams(window.location.search).get('date');
+    const queryDate = location.state?.date || new URLSearchParams(window.location.search).get('date');
     if (queryDate) return queryDate;
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
   const [selectedTime, setSelectedTime] = useState(() => {
-    const queryTime = new URLSearchParams(window.location.search).get('time');
+    const queryTime = location.state?.time || new URLSearchParams(window.location.search).get('time');
     if (queryTime) return queryTime;
     const now = new Date();
     now.setHours(now.getHours() + 1);
     now.setMinutes(0);
     return now.toTimeString().slice(0, 5);
   });
-  const [placeType, setPlaceType] = useState(() => new URLSearchParams(window.location.search).get('placeType') || "restaurant");
-  const [travelMode, setTravelMode] = useState(() => new URLSearchParams(window.location.search).get('travelMode') || "driving");
+  const [placeType, setPlaceType] = useState(() => location.state?.placeType || new URLSearchParams(window.location.search).get('placeType') || "restaurant");
+  const [travelMode, setTravelMode] = useState(() => location.state?.travelMode || new URLSearchParams(window.location.search).get('travelMode') || "driving");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-
-  const navigate = useNavigate();
-  const location = useLocation();
 
   // On mount, if URL has parameters, auto-trigger a search once places wrap loads
   const autoSearchFired = useRef(false);
@@ -73,6 +74,7 @@ const App = (props) => {
   // Map state
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
+  const [polylines, setPolylines] = useState([]);
   const [directionsService, setDirectionsService] = useState(null);
   const [directionsRenderer, setDirectionsRenderer] = useState(null);
 
@@ -148,6 +150,7 @@ const App = (props) => {
 
     return () => {
       markers.forEach((marker) => marker.setMap(null));
+      polylines.forEach((polyline) => polyline.setMap(null));
       if (directionsRenderer) {
         directionsRenderer.setMap(null);
       }
@@ -184,20 +187,7 @@ const App = (props) => {
     }
   }, [placesLoaded, mapsLoaded]);
 
-const cleanMapStyles = [
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.government", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.medical", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.place_of_worship", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.school", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.sports_complex", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.park", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.attraction", stylers: [{ visibility: "off" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "transit.station", stylers: [{ visibility: "off" }] },
-  { featureType: "transit.line", stylers: [{ visibility: "off" }] },
-];
+const cleanMapStyles = customMapStyle;
 
 const initMap = async () => {
   if (mapRef.current && window.google?.maps?.Map) {
@@ -309,7 +299,8 @@ const initMap = async () => {
       center: initialCenter,
       zoom: initialZoom,
       // clickableIcons: false,
-      styles: cleanMapStyles
+      styles: cleanMapStyles,
+      disableDefaultUI: true
     });
     
     setMap(googleMap);
@@ -342,6 +333,8 @@ const initMap = async () => {
 
     // Clear old markers
     markers.forEach((m) => m.setMap(null));
+    polylines.forEach((p) => p.setMap(null));
+    setPolylines([]);
     // directionsRenderer.setDirections({ routes: [] }); // Prevent flickering by not clearing routes before redrawing
 
     const newMarkers = [];
@@ -409,36 +402,44 @@ const initMap = async () => {
         map,
         title: restaurant.name,
         icon: { 
-          url: "https://maps.google.com/mapfiles/ms/icons/orange-dot.png",
-          scaledSize: new window.google.maps.Size(32, 32)
+          url: "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2234%22%20viewBox%3D%220%200%2024%2034%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%200C5.373%200%200%205.373%200%2012c0%208.5%2012%2022%2012%2022s12-13.5%2012-22C24%205.373%2018.627%200%2012%200zm0%2016c-2.209%200-4-1.791-4-4s1.791-4%204-4%204%201.791%204%204-1.791%204-4%204z%22%20fill%3D%22%23994100%22%2F%3E%3C%2Fsvg%3E",
+          scaledSize: new window.google.maps.Size(24, 34),
+          anchor: new window.google.maps.Point(12, 34)
         }
       });
 
-      //// on hover focus sidebar card ////
+      // Remove global state update to prevent sidebar re-rendering
+      // marker.addListener("mouseover", () => {
+      //   setHoveredVenueId(restaurant.place_id);
+      // });
+      // marker.addListener("mouseout", () => {
+      //   setHoveredVenueId(null);
+      // });    
+
       marker.addListener("mouseover", () => {
-        setHoveredVenueId(restaurant.place_id);
+        const imageUrl = restaurant.photo_references && restaurant.photo_references.length > 0
+          ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${restaurant.photo_references[0]}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+          : "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=400&q=80"; // fallback if no photo exists
+
+        const content = `
+          <div style="max-width: 200px; font-family: 'Inter', sans-serif; overflow: hidden;">
+            <img src="${imageUrl}" alt="${restaurant.name}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;" />
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${restaurant.name}</h3>
+            <p style="margin: 0 0 4px 0; font-size: 12px; color: #4B5563; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${restaurant.address || ""}</p>
+            ${restaurant.rating ? `<div style="display: flex; align-items: center; gap: 4px;"><span style="color: #F59E0B; font-size: 12px;">★</span><span style="font-size: 12px; font-weight: 500; color: #374151;">${restaurant.rating}</span></div>` : ""}
+          </div>
+        `;
+        infoWindow.setContent(content);
+        infoWindow.open({
+           anchor: marker,
+           map,
+           shouldFocus: false,
+        });
       });
 
-      // Clear focus on mouseout
       marker.addListener("mouseout", () => {
-        setHoveredVenueId(null);
-      });    
-
-      // marker.addListener("mouseover", () => {
-      //   const content = `
-      //     <div style="max-width:220px">
-      //       <strong>${restaurant.name}</strong><br/>
-      //       ${restaurant.address || ""}<br/>
-      //       ${restaurant.rating ? `⭐ ${restaurant.rating}` : ""}
-      //     </div>
-      //   `;
-      //   infoWindow.setContent(content);
-      //   infoWindow.open(map, marker);
-      // });
-
-      // marker.addListener("mouseout", () => {
-      //   infoWindow.close();
-      // });
+        infoWindow.close();
+      });
 
       console.log("Restaurant Data:", restaurant);
 
@@ -517,7 +518,9 @@ const initMap = async () => {
 
     // Clear existing markers and routes
     markers.forEach((m) => m.setMap(null));
-    // directionsRenderer.setDirections({ routes: [] }); // Prevent flickering by not clearing routes before redrawing
+    polylines.forEach((p) => p.setMap(null));
+    setPolylines([]);
+    if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
 
     const newMarkers = [];
 
@@ -580,8 +583,9 @@ const initMap = async () => {
       map,
       title: selected.name,
       icon: { 
-        url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-        scaledSize: new window.google.maps.Size(32, 32)
+        url: "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2224%22%20height%3D%2234%22%20viewBox%3D%220%200%2024%2034%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M12%200C5.373%200%200%205.373%200%2012c0%208.5%2012%2022%2012%2022s12-13.5%2012-22C24%205.373%2018.627%200%2012%200zm0%2016c-2.209%200-4-1.791-4-4s1.791-4%204-4%204%201.791%204%204-1.791%204-4%204z%22%20fill%3D%22%23b31b25%22%2F%3E%3C%2Fsvg%3E",
+        scaledSize: new window.google.maps.Size(28, 40),
+        anchor: new window.google.maps.Point(14, 40)
       }
     });
 
@@ -590,29 +594,61 @@ const initMap = async () => {
     map.setCenter({ lat: selected.lat, lng: selected.lon });
     map.setZoom(16);
 
-   // Display route through the selected place
-    directionsService.route({
-      origin: loc1Coords,
-      destination: loc2Coords,
-      waypoints: [{
-        location: selectedPlaceCoords,
-        stopover: true
-      }],
-      travelMode: "DRIVING",
-    }, (result, status) => {
-      if (status === "OK") {
-        const currentCenter = map.getCenter();
-        const currentZoom = map.getZoom();
-        
-        directionsRenderer.setDirections(result);
-        setTimeout(() => {
-          map.setCenter(currentCenter);
-          map.setZoom(currentZoom);
-        }, 20);
-      } else {
-        console.error("Directions request failed due to " + status);
-        setError("Could not display route on map: " + status);
-      }
+   // Display dotted and solid routes to the selected place using Directions API
+    const lineSymbol = {
+      path: 'M 0,-1 0,1',
+      strokeOpacity: 1,
+      scale: 3
+    };
+
+    const getRoutePath = (origin, destination) => {
+      return new Promise((resolve) => {
+        directionsService.route({
+          origin,
+          destination,
+          travelMode: window.google.maps.TravelMode.DRIVING
+        }, (result, status) => {
+          if (status === "OK" && result.routes && result.routes.length > 0) {
+            resolve(result.routes[0].overview_path);
+          } else {
+            console.error("Directions request failed due to " + status);
+            resolve([origin, destination]); // Fallback to straight line
+          }
+        });
+      });
+    };
+
+    Promise.all([
+      getRoutePath(loc1Coords, selectedPlaceCoords),
+      getRoutePath(loc2Coords, selectedPlaceCoords)
+    ]).then(([path1, path2]) => {
+      const loc1Polyline = new window.google.maps.Polyline({
+        path: path1,
+        geodesic: true,
+        strokeColor: '#0B57D0',
+        strokeOpacity: 0,
+        strokeWeight: 4,
+        icons: [{
+          icon: lineSymbol,
+          offset: '0',
+          repeat: '15px'
+        }],
+        map: map
+      });
+
+      const loc2Polyline = new window.google.maps.Polyline({
+        path: path2,
+        geodesic: true,
+        strokeColor: '#0B57D0',
+        strokeOpacity: 1.0,
+        strokeWeight: 4,
+        map: map
+      });
+
+      setPolylines(prev => {
+        prev.forEach(p => p.setMap(null));
+        return [loc1Polyline, loc2Polyline];
+      });
     });
   };
 
@@ -670,8 +706,7 @@ const initMap = async () => {
     const loc1Val = location1InputRef.current?.value || location1;
     const loc2Val = location2InputRef.current?.value || location2;
 
-    // Construct query parameters
-    const params = new URLSearchParams({
+    const searchState = {
       loc1: loc1Val,
       loc2: loc2Val,
       searchMode,
@@ -679,15 +714,15 @@ const initMap = async () => {
       placeType,
       radius: searchRadius,
       margin: timeDifferenceMargin
-    });
+    };
 
     if (location.pathname !== '/venues') {
-      navigate(`/venues?${params.toString()}`);
+      navigate('/venues', { state: searchState });
       // return to let the navigate trigger re-render, 
       // but we wait for it to process the next step or we can perform search immediately
     } else {
       // we are on venues page but parameters might have updated
-      navigate(`?${params.toString()}`, { replace: true });
+      navigate('/venues', { replace: true, state: searchState });
     }
 
     setLoading(true);
@@ -1270,14 +1305,21 @@ const initMap = async () => {
       </div>
       {/* Modal/Detail Overlays */}
       {isDetailedView && (
-        <VenueDetailCard
-          venue={midwayRestaurants.find(v => v.place_id === detailedPlaceId)}
-          onClose={() => {
-            console.log('Closing Detail Card');
-            setIsDetailedView(false);
-            setDetailedPlaceId(null);
-          }}
-        />
+        <div style={{ position: "fixed", top: "24px", left: "calc(30vw + 24px)", zIndex: 50 }}>
+          <button 
+            onClick={() => {
+              console.log('Resetting view');
+              setIsDetailedView(false);
+              setDetailedPlaceId(null);
+            }}
+            className="flex items-center gap-2 bg-white px-5 py-2.5 rounded-full shadow-lg text-sm font-bold text-blue-600 hover:bg-slate-50 transition-colors border border-slate-200"
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.5 15L8 10.5L12.5 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Back to all venues
+          </button>
+        </div>
       )}
     </div>
   );
