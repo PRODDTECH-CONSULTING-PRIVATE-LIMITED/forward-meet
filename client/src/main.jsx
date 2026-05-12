@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")).render(
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<App />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/venues" element={<App />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/editors-recommendation" element={<EditorsRecommendation />} />
