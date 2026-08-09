@@ -473,6 +473,151 @@ app.post("/api/find_midway_restaurant", async (req, res) => {
   }
 });
 
+// API endpoint to find a midway restaurant for multiple people
+app.post("/api/find_midway_multiple", async (req, res) => {
+  const {
+    locations,
+    searchMode,
+    searchRadius,
+    timeDifferenceMargin,
+    travelMode,
+    departureTime,
+    placeType,
+  } = req.body;
+
+  if (departureTime) {
+    console.log('Received departureTime (UNIX) for multiple:', departureTime, '| Date:', new Date(departureTime * 1000).toString());
+  }
+
+  if (!locations || !Array.isArray(locations) || locations.length < 2) {
+    return res.status(400).json({ error: "Please provide an array of at least 2 locations." });
+  }
+
+  if (searchMode === 'time' && timeDifferenceMargin === undefined) {
+    return res.status(400).json({ error: "timeDifferenceMargin is required when searchMode is 'time'." });
+  }
+  
+  if (searchMode === 'distance' && searchRadius === undefined) {
+    return res.status(400).json({ error: "searchRadius is required when searchMode is 'distance'." });
+  }
+
+  try {
+    const locationCoords = await Promise.all(
+      locations.map(async (loc) => {
+        if (!loc || !loc.trim()) return null;
+        return await geocodeAddress(loc);
+      })
+    );
+
+    const validCoords = locationCoords.filter((coord) => coord !== null);
+
+    if (validCoords.length < 2) {
+      return res.status(404).json({ error: "Could not geocode enough valid locations." });
+    }
+
+    const totalCoords = validCoords.reduce((acc, curr) => ({
+      lat: acc.lat + curr.lat,
+      lng: acc.lng + curr.lng,
+    }), { lat: 0, lng: 0 });
+
+    const midpoint = {
+      lat: totalCoords.lat / validCoords.length,
+      lng: totalCoords.lng / validCoords.length,
+    };
+
+    let radiusInKm = searchMode === 'distance' ? searchRadius : 20;
+    const searchRadiusMeters = radiusInKm * 1000;
+
+    const places = await findPlacesNearMidpoint(
+      midpoint,
+      placeType,
+      searchRadiusMeters
+    );
+
+    if (places.length === 0) {
+      return res.status(404).json({
+        error: "No places found near the midpoint with the given criteria.",
+      });
+    }
+
+    const restaurantsWithDetails = [];
+
+    await Promise.all(
+      places.map(async (place) => {
+        const placeDetails = await getPlaceDetails(place.place_id);
+
+        if (placeDetails) {
+          const travelDetails = await Promise.all(
+            validCoords.map(async (coords) => {
+              return await getTravelDetails(
+                coords,
+                { lat: placeDetails.lat, lng: placeDetails.lon },
+                travelMode,
+                departureTime
+              );
+            })
+          );
+
+          if (travelDetails.every(detail => detail !== null)) {
+            const times = travelDetails.map(td => td.duration_min);
+            const distances = travelDetails.map(td => Number(td.distance_km));
+            const maxTime = Math.max(...times);
+            const minTime = Math.min(...times);
+            const maxTimeDifference = maxTime - minTime;
+            
+            const maxDist = Math.max(...distances);
+            const minDist = Math.min(...distances);
+            const maxDistanceDifference = maxDist - minDist;
+
+            restaurantsWithDetails.push({
+              ...placeDetails,
+              travel_details: travelDetails.map((td, index) => ({
+                duration_min: td.duration_min,
+                distance_km: td.distance_km,
+                original_lat: validCoords[index].lat,
+                original_lon: validCoords[index].lng,
+              })),
+              time_difference_min: maxTimeDifference,
+              distance_difference_km: maxDistanceDifference,
+              total_duration_min: times.reduce((a, b) => a + b, 0),
+            });
+          }
+        }
+      })
+    );
+
+    let filteredRestaurants = restaurantsWithDetails;
+    
+    if (searchMode === "time" && timeDifferenceMargin !== undefined) {
+      filteredRestaurants = restaurantsWithDetails.filter(
+        (restaurant) => restaurant.time_difference_min <= timeDifferenceMargin
+      );
+    }
+
+    if (searchMode === "time") {
+      filteredRestaurants.sort(
+        (a, b) => a.time_difference_min - b.time_difference_min
+      );
+    } else {
+      filteredRestaurants.sort(
+        (a, b) => a.distance_difference_km - b.distance_difference_km
+      );
+    }
+
+    if (filteredRestaurants.length === 0) {
+      return res.status(404).json({
+        error: "No suitable places found with travel details. Try adjusting the search radius or criteria.",
+      });
+    }
+
+    res.json(filteredRestaurants);
+  } catch (error) {
+    console.error("Error in find_midway_multiple:", error);
+    res.status(500).json({ error: "An internal server error occurred." });
+  }
+});
+
+
 // New API endpoint to proxy Google Place Photos
 app.get("/api/place_photo", async (req, res) => {
   const { photoreference, maxwidth = 400 } = req.query; // Default maxwidth to 400

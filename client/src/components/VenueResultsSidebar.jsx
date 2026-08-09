@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react';
-import SegmentedControl from './SegmentedControl';
-import SearchRadiusSlider from './SearchRadiusSlider';
-import TimeDifferenceSlider from './TimeDifferenceSlider';
-import GooglePlacesCardCompact from './GooglePlacesCardCompact';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+//import GooglePlacesCardCompact from './GooglePlacesCardCompact';
+import VenueCard from './VenueCard';
+import SidebarHeader from './SidebarHeader';
+import SidebarFilters from './SidebarFilters';
 
 const VenueResultsSidebar = ({ 
   venues, 
@@ -61,127 +61,20 @@ const VenueResultsSidebar = ({
         }}
       >
         {/* Header */}
-        <div style={{
-          padding: '16px 20px',
-          borderBottom: '1px solid var(--color-border)',
-          background: 'var(--gradient-primary)',
-          color: 'white',
-          position: 'relative',
-          boxShadow: '0 2px 8px rgba(99, 102, 241, 0.15)',
-          zIndex: 10
-        }}>
-          {/* Close Button */}
-          <button
-            onClick={onToggle}
-            style={{
-              position: 'absolute',
-              top: '14px',
-              right: '16px',
-              background: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '8px',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              zIndex: 10,
-              fontSize: '18px',
-              color: 'white',
-              lineHeight: 1
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-            aria-label="Close sidebar"
-            title="Close"
-          >
-            ×
-          </button>
-
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'baseline',
-            gap: '10px',
-            paddingRight: '40px' 
-          }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Suggested Venues
-            </h3>
-            <span style={{ 
-              fontSize: '11px',
-              fontWeight: 700,
-              opacity: 0.9,
-              background: 'rgba(255,255,255,0.15)',
-              padding: '2px 8px',
-              borderRadius: '6px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              {totalResults}
-            </span>
-          </div>
-        </div>
+        <SidebarHeader 
+          totalResults={totalResults} 
+          onToggle={onToggle} 
+        />
 
         {/* Filter Controls */}
-        <div style={{
-          padding: '8px 16px',
-          borderBottom: '1px solid #e2e8f0',
-          background: '#f8fafc'
-        }}>
-          <SegmentedControl
-            options={[
-              { value: 'time', label: 'Time', icon: '⏱️' },
-              { value: 'distance', label: 'Distance', icon: '📏' }
-            ]}
-            selected={searchMode}
-            onChange={onSearchModeChange}
-          />
-
-          <div style={{ marginTop: '0px' }}>
-            {searchMode === 'time' ? (
-              <TimeDifferenceSlider
-                value={timeDifferenceMargin}
-                onChange={onTimeDifferenceMarginChange}
-                min={0}
-                max={30}
-              />
-            ) : (
-              <SearchRadiusSlider
-                value={searchRadius}
-                onChange={onSearchRadiusChange}
-                min={1}
-                max={10}
-              />
-            )}
-          </div>
-
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '6px', 
-            marginTop: '12px',
-            color: '#64748b',
-            fontSize: '11px',
-            paddingLeft: '4px',
-            paddingBottom: '4px'
-          }}>
-            <Info size={14} style={{ flexShrink: 0, opacity: 0.8 }} />
-            <span style={{ fontWeight: 500 }}>
-              {searchMode === 'time' 
-                ? "Max difference in travel time between people" 
-                : "Radius around the midpoint"}
-            </span>
-          </div>
-        </div>
+        <SidebarFilters
+          searchMode={searchMode}
+          onSearchModeChange={onSearchModeChange}
+          searchRadius={searchRadius}
+          onSearchRadiusChange={onSearchRadiusChange}
+          timeDifferenceMargin={timeDifferenceMargin}
+          onTimeDifferenceMarginChange={onTimeDifferenceMarginChange}
+        />
 
         {/* Venue List */}
         <div 
@@ -251,7 +144,7 @@ const VenueResultsSidebar = ({
                   onMouseLeave={() => onVenueHover && onVenueHover(null)}
                   className={`transition-transform duration-200 ${hoveredVenueId === venue.place_id ? 'translate-y-[-2px]' : ''} mb-2 flex justify-center`}
                 >
-                  <GooglePlacesCardCompact
+                  <VenueCard
                     placeId={venue.place_id}
                     locationInfo={venue}
                     onClick={() => onVenueClick(venue.place_id)}
