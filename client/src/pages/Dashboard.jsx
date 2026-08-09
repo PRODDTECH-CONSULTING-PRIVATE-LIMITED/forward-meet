@@ -5,6 +5,7 @@ import {
   ArrowRightLeft, CalendarDays, ChevronDown, ArrowRight,
   Clock, SlidersHorizontal, Calendar, Navigation, MapPin
 } from 'lucide-react';
+import GroupSearchBar from '../components/GroupSearchBar';
 import './dashboard.css';
 
 /* ── dropdown components borrowed from location-selector ── */
@@ -361,6 +362,7 @@ const Dashboard = () => {
         <p>Calculate the fairest and most convenient meeting location for everyone, based on real-time traffic and transit logistics.</p>
 
         {/* Search Bar */}
+        {activeNav === 'meeting' && (
         <div className="dash-search">
           {/* Start Point A */}
           <div className="dash-search-field" ref={wrap1} style={{ position: 'relative' }}>
@@ -463,6 +465,16 @@ const Dashboard = () => {
             Find Midway
           </button>
         </div>
+        )}
+        {activeNav === 'group' && (
+          <GroupSearchBar 
+            travelMode={travelMode} 
+            placeType={placeType} 
+            scheduleDate={scheduleDate} 
+            formatSchedule={formatSchedule} 
+            setShowCalendar={setShowCalendar} 
+          />
+        )}
       </section>
 
       {/* ─── Filter Pills ─── */}

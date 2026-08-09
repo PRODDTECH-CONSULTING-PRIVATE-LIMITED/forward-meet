@@ -86,6 +86,7 @@ const VenueCard = ({ placeId, locationInfo, onClick, setIsDetailedView }) => {
     travel_time_from_loc2_min,
     travel_distance_from_loc1_km,
     travel_distance_from_loc2_km,
+    travel_details
   } = locationInfo || {};
 
   /* ── Handlers ───────────────────────────────────────────── */
@@ -323,25 +324,43 @@ const VenueCard = ({ placeId, locationInfo, onClick, setIsDetailedView }) => {
       {/* ── Travel Info Pill ── */}
       {locationInfo && (
         <div className="venue-card__travel">
-          <div className="venue-card__travel-person">
-            <span className="venue-card__travel-label">Person A</span>
-            <span className="venue-card__travel-value">
-              {travel_time_from_loc1_min ?? "—"}m
-              <span className="venue-card__travel-pipe"> | </span>
-              {travel_distance_from_loc1_km ?? "—"}km
-            </span>
-          </div>
+          {travel_details ? (
+            travel_details.map((detail, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <div className="venue-card__travel-separator" />}
+                <div className="venue-card__travel-person">
+                  <span className="venue-card__travel-label">Person {String.fromCharCode(65 + idx)}</span>
+                  <span className="venue-card__travel-value">
+                    {detail.duration_min ?? "—"}m
+                    <span className="venue-card__travel-pipe"> | </span>
+                    {detail.distance_km ?? "—"}km
+                  </span>
+                </div>
+              </React.Fragment>
+            ))
+          ) : (
+            <>
+              <div className="venue-card__travel-person">
+                <span className="venue-card__travel-label">Person A</span>
+                <span className="venue-card__travel-value">
+                  {travel_time_from_loc1_min ?? "—"}m
+                  <span className="venue-card__travel-pipe"> | </span>
+                  {travel_distance_from_loc1_km ?? "—"}km
+                </span>
+              </div>
 
-          <div className="venue-card__travel-separator" />
+              <div className="venue-card__travel-separator" />
 
-          <div className="venue-card__travel-person">
-            <span className="venue-card__travel-label">Person B</span>
-            <span className="venue-card__travel-value">
-              {travel_time_from_loc2_min ?? "—"}m
-              <span className="venue-card__travel-pipe"> | </span>
-              {travel_distance_from_loc2_km ?? "—"}km
-            </span>
-          </div>
+              <div className="venue-card__travel-person">
+                <span className="venue-card__travel-label">Person B</span>
+                <span className="venue-card__travel-value">
+                  {travel_time_from_loc2_min ?? "—"}m
+                  <span className="venue-card__travel-pipe"> | </span>
+                  {travel_distance_from_loc2_km ?? "—"}km
+                </span>
+              </div>
+            </>
+          )}
         </div>
       )}
 
